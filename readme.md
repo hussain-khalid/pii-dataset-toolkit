@@ -12,7 +12,7 @@ details.
 | --- | --- |
 | 1. Synthetic text with PII spans, schema, validator, tests | done |
 | 2. Synthetic document images with bounding boxes, validator, previews | done |
-| 3. Merge, deduplicate, provenance, dataset card | planned |
+| 3. Merge, deduplicate, provenance, splits, dataset card | done |
 | 4. Benchmark: frozen split, scorer, baseline, leaderboard | planned |
 | 5. Documentation and CI polish | planned |
 
@@ -30,6 +30,11 @@ python -m piikit.validate data/raw/text.jsonl
 python -m piikit.doc_gen --n 200 --seed 42 --out-dir data/raw/docs
 python -m piikit.validate_docs data/raw/docs/docs.jsonl
 python -m piikit.preview data/raw/docs/docs.jsonl --n 6 --out-dir docs/images/previews
+
+# merged release: dedup, splits, provenance, dataset card
+python -m piikit.build_release --text data/raw/text.jsonl --docs data/raw/docs/docs.jsonl \
+    --out-dir data/release/v0.1.0 --seed 42 --version 0.1.0 --overwrite
+python -m piikit.validate_release data/release/v0.1.0
 
 pytest -v
 ```
@@ -106,3 +111,46 @@ bundled default font, so no font files need to be installed.
 - Every box contains visible text (contrast check), so a box cannot point at blank paper.
 - Boxes do not overlap each other, and ids are unique.
 - The same seed produces identical annotations and identical image bytes (tested).
+
+## Release (milestone 3)
+
+`piikit.build_release` merges the two datasets into one versioned release:
+
+```
+data/release/v0.1.0/
+  text/{train,validation,test}.jsonl
+  docs/{train,validation,test}.jsonl   docs/images/*.png
+  DATASET_CARD.md      generated from the real counts
+  PROVENANCE.json      inputs, checksums, parameters, licence
+  MANIFEST.json        every file with SHA-256 and record count
+  dedup_report.json    every removed record and why
+```
+
+What it does:
+
+1. **Deduplicates.** Text: exact duplicates (case and whitespace ignored) and near-duplicates
+   (Jaccard similarity of word 3-gram shingles at or above 0.8, found through an inverted
+   index so records are only compared when they share a shingle). Documents: repeated field
+   sets and byte-identical images. The first occurrence always wins.
+2. **Splits** into train, validation and test (80/10/10) from a hash of each record's id and
+   the seed, so a record never changes split when other records are added or removed.
+3. **Adds provenance** to every record: generator, input file and line, input checksum, a
+   `synthetic: true` flag and the licence (`CC0-1.0`, set in `piikit/build_release.py`).
+4. **Writes the manifest and the dataset card.** Nothing depends on the clock or machine, so
+   the same inputs always give byte-identical output (tested).
+
+`piikit.validate_release` re-checks a built release: manifest checksums and record counts,
+the text and document schemas for every split, provenance on every record, and no id, text
+or image shared between splits.
+
+To publish the card on GitHub, copy it into the repo: `cp data/release/v0.1.0/DATASET_CARD.md docs/`.
+
+### Finding: deduplication exposed a weakness in my own generator
+
+The first version of the text generator had only five fixed sentences with no PII. In a
+1,000-record sample, 213 records (21%) were exact duplicates, and the "no PII" class had just
+five distinct texts. The dedup step surfaced this. I added parameterised no-PII templates
+(order numbers, versions, amounts, times, products) that look a little like identifiers but
+are not personal data, and capped the share of no-PII records at about 20%. With seed 42 and
+1,000 records, 78 records are now removed (74 exact, 4 near-duplicates), and the no-PII class
+has 128 distinct texts instead of 5.

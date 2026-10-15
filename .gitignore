@@ -10,3 +10,4 @@ __pycache__/
 
 # Generated datasets (regenerate with the commands in the README)
 data/raw/
+data/release/

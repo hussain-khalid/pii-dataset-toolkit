@@ -18,6 +18,7 @@ from piikit import __version__
 from piikit.schema import LABELS
 
 SOURCE = "synthetic/text_gen"
+NEGATIVE_RATE = 0.20  # share of records that contain no PII
 
 FIRST_NAMES = [
     "Anna", "Liam", "Sofia", "Noah", "Maya", "Omar", "Elena", "Jonas", "Priya", "Lucas",
@@ -63,11 +64,22 @@ TEMPLATES = {
     "t17": "{PERSON} and {PERSON} share the same delivery address: {ADDRESS}.",
     "t18": "Support ticket opened by {EMAIL}; callback number {PHONE}.",
     # Records with no PII at all, so a detector can't just flag everything.
-    "n01": "The quarterly report will be published next Tuesday.",
+    # Most use non-PII fillers (order numbers, versions, amounts...) that look
+    # a little like identifiers but are not personal data.
+    "n01": "The quarterly report will be published next {WEEKDAY}.",
     "n02": "Our office is closed on public holidays.",
     "n03": "Please restart the application and try again.",
-    "n04": "The meeting was moved to the large conference room.",
+    "n04": "The meeting was moved to {TIME} in the large conference room.",
     "n05": "Thank you for contacting support, we will reply within two days.",
+    "n06": "Order #{ORDER_NO} shipped on {WEEKDAY} and should arrive soon.",
+    "n07": "The {PRODUCT} is back in stock for {AMOUNT}.",
+    "n08": "Release {VERSION} fixes a crash when opening large files.",
+    "n09": "Your refund of {AMOUNT} for order #{ORDER_NO} has been processed.",
+    "n10": "Maintenance is planned for {WEEKDAY} at {TIME}, expect short downtime.",
+    "n11": "The {PRODUCT} requires version {VERSION} or newer to run.",
+    "n12": "We received order #{ORDER_NO} and will ship the {PRODUCT} on {WEEKDAY}.",
+    "n13": "Opening hours are 09:00 to 17:00, Monday to {WEEKDAY}.",
+    "n14": "Please allow up to {ORDER_NO} seconds for the page to refresh.",
 }
 
 PLACEHOLDER = re.compile(r"\{([A-Z_]+)\}")
@@ -109,6 +121,45 @@ def make_dob(rng):
     return f"{MONTHS[month - 1]} {day}, {year}"
 
 
+WEEKDAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
+PRODUCTS = ["standing desk", "travel mug", "wireless keyboard", "desk lamp", "backpack",
+            "monitor stand", "notebook set", "water bottle"]
+
+
+def make_weekday(rng):
+    return rng.choice(WEEKDAYS)
+
+
+def make_time(rng):
+    return f"{rng.randint(8, 18):02d}:{rng.choice(['00', '15', '30', '45'])}"
+
+
+def make_order_no(rng):
+    return str(rng.randint(1000, 99999))
+
+
+def make_amount(rng):
+    return f"${rng.randint(5, 900)}.{rng.choice(['00', '50', '99'])}"
+
+
+def make_product(rng):
+    return rng.choice(PRODUCTS)
+
+
+def make_version(rng):
+    return f"{rng.randint(1, 9)}.{rng.randint(0, 20)}.{rng.randint(0, 9)}"
+
+
+# Placeholders that are NOT personal data: filled in, but never labelled.
+FILLERS = {
+    "WEEKDAY": make_weekday,
+    "TIME": make_time,
+    "ORDER_NO": make_order_no,
+    "AMOUNT": make_amount,
+    "PRODUCT": make_product,
+    "VERSION": make_version,
+}
+
 GENERATORS = {
     "PERSON": make_person,
     "EMAIL": make_email,
@@ -131,8 +182,11 @@ def render(template: str, rng):
         pos += len(literal)
 
         label = match.group(1)
-        value = GENERATORS[label](rng)
-        spans.append({"start": pos, "end": pos + len(value), "label": label, "text": value})
+        if label in FILLERS:
+            value = FILLERS[label](rng)
+        else:
+            value = GENERATORS[label](rng)
+            spans.append({"start": pos, "end": pos + len(value), "label": label, "text": value})
         out.append(value)
         pos += len(value)
         cursor = match.end()
@@ -145,7 +199,9 @@ def render(template: str, rng):
 def generate_record(index: int, seed: int) -> dict:
     # Each record has its own RNG, so record i is the same whatever n is.
     rng = random.Random(f"{seed}-{index}")
-    template_id = rng.choice(sorted(TEMPLATES))
+    negative = rng.random() < NEGATIVE_RATE
+    pool = sorted(t for t in TEMPLATES if t.startswith("n") == negative)
+    template_id = rng.choice(pool)
     text, spans = render(TEMPLATES[template_id], rng)
     return {
         "id": f"txt-{index:06d}",
