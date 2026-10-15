@@ -1,1 +1,1 @@
-pytest
+Pillow>=10.1

@@ -7,3 +7,6 @@ __pycache__/
 .idea/
 .vscode/
 .env
+
+# Generated datasets (regenerate with the commands in the README)
+data/raw/
