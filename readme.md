@@ -3,9 +3,10 @@
 ![CI](https://github.com/<your-username>/pii-dataset-toolkit/actions/workflows/ci.yml/badge.svg)
 
 Reproducible tooling for building, validating and benchmarking **synthetic** datasets for
-personal-data (PII) detection, in two forms: text with labelled spans, and document images
-(invoices, forms, ID-style cards) with labelled bounding boxes. All data is fabricated. No real
-person's information is used anywhere.
+personal-data (PII) detection, in three modalities: text with labelled spans, document images
+(invoices, forms, ID-style cards) with labelled bounding boxes, and speech audio with
+millisecond-precision PII timestamps. All data is fabricated. No real person's information is
+used anywhere.
 
 ![Invoice with labelled boxes](docs/images/previews/example_invoice.png)
 
@@ -13,6 +14,9 @@ person's information is used anywhere.
 
 - **Reproducible pipelines.** Seeded generators, byte-identical output for the same seed, and
   tests that check it.
+- **Multimodal synthetic data.** Text with character-offset spans, document images with exact
+  pixel bounding boxes, and speech audio with millisecond-precision PII timestamps — all from
+  the same seeded text records.
 - **Data quality.** Schema validation, exact and near-duplicate removal, split isolation,
   per-record provenance and a checksum manifest.
 - **Evaluation.** A checksum-frozen test split, strict and relaxed scoring, bootstrap
@@ -37,9 +41,14 @@ commands for every stage are in [docs/pipeline.md](docs/pipeline.md).
 
 ```mermaid
 flowchart LR
-    A[generate text and documents] --> B[validate]
-    B --> C[build release<br/>dedup, split, provenance]
-    C --> D[validate release]
+    A[text_gen] --> V1[validate]
+    B[doc_gen] --> V2[validate_docs]
+    V1 --> BR[build_release]
+    V2 --> BR
+    V1 --> SG[speech_gen]
+    SG --> VS[validate_speech]
+    BR --> C[release]
+    C --> D[validate_release]
     C --> E[freeze test split]
     E --> F[score systems]
     F --> G[leaderboard]
@@ -48,12 +57,15 @@ flowchart LR
 | Module | Purpose |
 | --- | --- |
 | `piikit.text_gen`, `piikit.doc_gen` | Seeded generators for text records and document images |
-| `piikit.validate`, `piikit.validate_docs` | Validators for each dataset |
+| `piikit.speech_gen` | Converts text records to MP3 audio (Edge TTS) and aligns PII spans to millisecond timestamps |
+| `piikit.validate`, `piikit.validate_docs` | Validators for text and document datasets |
+| `piikit.validate_speech` | Validates speech records: keys, audio file, span slices, time bounds |
 | `piikit.dedup`, `piikit.splits` | Exact and near-duplicate removal; hash-based splits |
 | `piikit.build_release`, `piikit.card` | Merge, provenance, manifest, generated dataset card |
 | `piikit.validate_release` | Checks a finished release, including leakage between splits |
 | `piikit.freeze`, `piikit.score` | Freeze the test split; score predictions against it |
 | `piikit.baselines`, `piikit.leaderboard`, `piikit.label_map` | Baselines, ranking, label mappings |
+| `piikit.systems.ocr_baseline` | Tesseract OCR baseline: word-level bounding boxes via pytesseract, regex rules, pixel-box output |
 | `piikit.preview` | Draws labelled boxes on documents for visual checks |
 
 ## Data formats
@@ -95,6 +107,28 @@ pixels with the origin at the top-left corner of the image.
 Labels: `PERSON`, `EMAIL`, `PHONE`, `ADDRESS`, `ID_NUMBER`, `DATE_OF_BIRTH`.
 Document types: `invoice`, `form`, `id_card`. Boxes come from the drawing call
 (`ImageDraw.textbbox`), so they match the rendered text exactly.
+
+**Speech** (`speech/*.jsonl` plus `speech/audio/*.mp3`). Derived from text records; `start_s`
+and `end_s` are in seconds. `null` means the TTS tokeniser split the entity across word boundaries
+(rare; typically hard-format values like `AB-123456` or obfuscated email addresses).
+
+```json
+{
+  "id": "txt-000042",
+  "audio": "audio/txt-000042.mp3",
+  "duration_s": 3.87,
+  "text": "Reference ZC-893329 was issued to Maya Meyer.",
+  "spans": [
+    {"start": 10, "end": 19, "label": "ID_NUMBER", "text": "ZC-893329", "start_s": 1.13, "end_s": 2.06},
+    {"start": 34, "end": 44, "label": "PERSON",    "text": "Maya Meyer", "start_s": 3.60, "end_s": 4.63}
+  ],
+  "tts_voice": "en-GB-RyanNeural",
+  "source": "synthetic/speech_gen",
+  "generator_version": "0.2.0",
+  "seed": 42,
+  "template_id": "t12"
+}
+```
 
 ![ID card with labelled boxes](docs/images/previews/example_id_card.png)
 
@@ -178,9 +212,10 @@ directly comparable.
 | `ID_NUMBER` | not mapped | not mapped |
 
 **Baselines.** `text-empty` and `docs-empty` predict nothing and give the floor. `text-regex`
-is a rule-based system I wrote with knowledge of the generator's common formats, so treat its
-score as an optimistic reference for simple rules. No document baseline beyond the empty one is
-included, because reading boxes from images needs an OCR engine.
+is a rule-based system written with knowledge of the generator's common formats, so treat its
+score as an optimistic reference for simple rules. `docs-ocr` runs Tesseract via `pytesseract`,
+applies the same regex rules to the extracted word tokens, and maps matches back to pixel
+bounding boxes — it is included as a concrete document baseline (see [benchmark/LEADERBOARD.md](benchmark/LEADERBOARD.md)).
 
 ## Findings
 

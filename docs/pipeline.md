@@ -7,9 +7,11 @@ Everything runs with `make all`; the individual commands are listed below.
 flowchart TD
     TG[text_gen<br/>seeded templates] --> V1[validate]
     DG[doc_gen<br/>Pillow drawing, exact boxes] --> V2[validate_docs]
+    V1 --> SG[speech_gen<br/>Edge TTS, time-aligned spans]
+    SG --> VS[validate_speech]
     V1 --> BR[build_release]
     V2 --> BR
-    BR -->|dedup, split, provenance, manifest| REL[(release v0.2.0)]
+    BR --> |dedup, split, provenance, manifest| REL[(release v0.2.0)]
     REL --> VR[validate_release]
     REL --> FZ[freeze: test split only]
     FZ --> BM[(benchmark + FROZEN.json)]
@@ -28,6 +30,8 @@ flowchart TD
 | Validate text | `python -m piikit.validate data/raw/text.jsonl` | `text.jsonl` | report | schema, `text[start:end]` equals the span text, offsets in range, no overlaps, labels allowed, unique ids |
 | Generate documents | `python -m piikit.doc_gen --n 200 --seed 42 --out-dir data/raw/docs` | seed | PNG images, `docs.jsonl` | none (see next row) |
 | Validate documents | `python -m piikit.validate_docs data/raw/docs/docs.jsonl` | images, `docs.jsonl` | report | image exists and matches stated size, boxes inside the image, boxes contain visible text, no overlapping boxes |
+| Generate speech | `python -m piikit.speech_gen --text data/raw/text.jsonl --n 50 --seed 42 --out-dir data/raw/speech` | `text.jsonl`, Edge TTS | `audio/*.mp3`, `speech.jsonl` | none (see next row) |
+| Validate speech | `python -m piikit.validate_speech data/raw/speech/speech.jsonl` | audio files, `speech.jsonl` | report | required keys, audio file exists, span text-slice matches, time offsets within duration, unique ids |
 | Build release | `python -m piikit.build_release ...` | both datasets | `data/release/v0.2.0/` | see below |
 | Validate release | `python -m piikit.validate_release data/release/v0.2.0` | the release | report | manifest checksums and counts, schemas per split, provenance on every record, no id, text or image shared between splits |
 | Freeze benchmark | `python -m piikit.freeze build --release ... --out benchmark` | release test split | `benchmark/` | refuses to overwrite an existing frozen benchmark |
@@ -59,7 +63,9 @@ splits from a hash of each record id, attach a provenance block to every record,
   split is small, so the intervals are wide.
 - **Validators are separate from generators.** The generators are trusted by construction,
   and the validators check the files as written, so they also catch edited or corrupted data.
-- **Standard library first.** The only runtime dependency is Pillow, for drawing documents.
+- **Standard library first.** Runtime dependencies are kept minimal: Pillow for drawing
+  documents, edge-tts for speech synthesis, and pytesseract for the OCR document baseline.
+  The core text pipeline (generate → validate → release → score) has no extra dependencies.
 
 ## Reproducibility
 
@@ -78,6 +84,9 @@ splits from a hash of each record id, attach a provenance block to every record,
   map it in `piikit/label_map.py`, and add tests. The validators and scorer pick it up from the schema.
 - **Add a document type:** add a drawing function and its page size in `piikit/doc_gen.py`
   and the type name in `piikit/schema.py`.
+- **Extend the speech pilot:** increase `--n` for a larger audio set, or swap Edge TTS for a
+  local TTS engine by replacing `_synthesize` in `piikit/speech_gen.py`. The alignment logic is
+  engine-agnostic as long as sentence-level timestamps are provided.
 
 See the [dataset card](DATASET_CARD.md) for contents and limitations, and the
 [leaderboard](../benchmark/LEADERBOARD.md) for current results.
