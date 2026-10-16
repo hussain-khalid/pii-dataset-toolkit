@@ -1,0 +1,59 @@
+{
+  "frozen_id": "47c5878bf8034739fa519c4221729efe6309e34b8f33fd2346966ba0555285b2",
+  "label_set": "none",
+  "metrics": {
+    "iou_0.5": {
+      "f1": 0.6667,
+      "f1_ci95": [
+        0.5839,
+        0.7634
+      ],
+      "fn": 16,
+      "fp": 29,
+      "per_label": {
+        "ADDRESS": {
+          "f1": 0.9231,
+          "precision": 1.0,
+          "recall": 0.8571,
+          "support": 14
+        },
+        "DATE_OF_BIRTH": {
+          "f1": 0.6,
+          "precision": 0.5,
+          "recall": 0.75,
+          "support": 8
+        },
+        "EMAIL": {
+          "f1": 0.9524,
+          "precision": 1.0,
+          "recall": 0.9091,
+          "support": 11
+        },
+        "ID_NUMBER": {
+          "f1": 0.7143,
+          "precision": 1.0,
+          "recall": 0.5556,
+          "support": 9
+        },
+        "PERSON": {
+          "f1": 0.3556,
+          "precision": 0.2581,
+          "recall": 0.5714,
+          "support": 14
+        },
+        "PHONE": {
+          "f1": 0.8889,
+          "precision": 1.0,
+          "recall": 0.8,
+          "support": 5
+        }
+      },
+      "precision": 0.6081,
+      "recall": 0.7377,
+      "tp": 45
+    }
+  },
+  "name": "ocr-regex",
+  "records": 15,
+  "task": "docs"
+}

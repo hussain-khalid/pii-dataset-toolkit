@@ -7,15 +7,19 @@ VERSION ?= 0.2.0
 RELEASE := data/release/v$(VERSION)
 PREDS := build/preds
 
-.PHONY: all data release previews benchmark test refreeze clean
+.PHONY: all data speech release previews benchmark test refreeze clean
 
-all: data release previews benchmark test
+all: data speech release previews benchmark test
 
 data:
 	$(PYTHON) -m piikit.text_gen --n 1000 --seed $(SEED) --out data/raw/text.jsonl
 	$(PYTHON) -m piikit.validate data/raw/text.jsonl
 	$(PYTHON) -m piikit.doc_gen --n 200 --seed $(SEED) --out-dir data/raw/docs
 	$(PYTHON) -m piikit.validate_docs data/raw/docs/docs.jsonl
+
+speech: data
+	$(PYTHON) -m piikit.speech_gen --text data/raw/text.jsonl --n 50 --seed $(SEED) --out-dir data/raw/speech
+	$(PYTHON) -m piikit.validate_speech data/raw/speech/speech.jsonl
 
 release: data
 	$(PYTHON) -m piikit.build_release --text data/raw/text.jsonl --docs data/raw/docs/docs.jsonl \
@@ -35,9 +39,11 @@ benchmark: release
 	$(PYTHON) -m piikit.baselines text-empty --bench benchmark --out $(PREDS)/text_empty.jsonl
 	$(PYTHON) -m piikit.baselines text-regex --bench benchmark --out $(PREDS)/text_regex.jsonl
 	$(PYTHON) -m piikit.baselines docs-empty --bench benchmark --out $(PREDS)/docs_empty.jsonl
+	$(PYTHON) -m piikit.baselines docs-ocr   --bench benchmark --out $(PREDS)/docs_ocr.jsonl
 	$(PYTHON) -m piikit.score text --pred $(PREDS)/text_empty.jsonl --name empty --save
 	$(PYTHON) -m piikit.score text --pred $(PREDS)/text_regex.jsonl --name regex-rules --save
 	$(PYTHON) -m piikit.score docs --pred $(PREDS)/docs_empty.jsonl --name empty --save
+	$(PYTHON) -m piikit.score docs --pred $(PREDS)/docs_ocr.jsonl   --name ocr-regex --save
 	$(PYTHON) -m piikit.leaderboard --bench benchmark
 
 test:

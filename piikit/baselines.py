@@ -1,15 +1,21 @@
 """Baseline systems for the benchmark.
 
 Usage:
-    python -m piikit.baselines text-empty --bench benchmark --out preds_empty.jsonl
-    python -m piikit.baselines text-regex --bench benchmark --out preds_regex.jsonl
-    python -m piikit.baselines docs-empty --bench benchmark --out preds_docs_empty.jsonl
+    python -m piikit.baselines text-empty  --bench benchmark --out preds_empty.jsonl
+    python -m piikit.baselines text-regex  --bench benchmark --out preds_regex.jsonl
+    python -m piikit.baselines docs-empty  --bench benchmark --out preds_docs_empty.jsonl
+    python -m piikit.baselines docs-ocr    --bench benchmark --out preds_docs_ocr.jsonl
 
 text-empty / docs-empty predict nothing (the floor). text-regex is a rule-based system
 written with knowledge of the formats this generator emits (reserved email domains, the
 555-01xx phone range, the two-letter ID format, ...). Treat its score as an optimistic
-reference for simple rules, not as evidence about real-world text. No document baseline
-is included because reading boxes from images needs an OCR engine.
+reference for simple rules, not as evidence about real-world text.
+
+docs-ocr runs Tesseract on every document image, then applies the same regex rules to
+the recognised text and maps matches back to pixel bounding boxes. Requires pytesseract
+and a system Tesseract installation (brew install tesseract / apt-get install tesseract-ocr).
+On clean synthetic documents Tesseract performs near-perfectly; treat the result as an
+upper bound for simple OCR+regex rather than evidence about real scanned documents.
 """
 
 import argparse
@@ -72,6 +78,9 @@ def run(kind: str, bench_dir: Path, out: Path):
         records = read_jsonl(bench_dir / "text" / "inputs.jsonl")
         preds = [{"id": r["id"], "spans": predict_text(r["text"]) if kind == "text-regex" else []}
                  for r in records]
+    elif kind == "docs-ocr":
+        from piikit.systems.ocr_baseline import run_ocr_baseline
+        return run_ocr_baseline(bench_dir, out)
     else:
         records = read_jsonl(bench_dir / "docs" / "inputs.jsonl")
         preds = [{"id": r["id"], "fields": []} for r in records]
@@ -86,7 +95,7 @@ def run(kind: str, bench_dir: Path, out: Path):
 def main():
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("kind", choices=["text-empty", "text-regex", "docs-empty"])
+    parser.add_argument("kind", choices=["text-empty", "text-regex", "docs-empty", "docs-ocr"])
     parser.add_argument("--bench", type=Path, default=Path("benchmark"))
     parser.add_argument("--out", type=Path, required=True)
     args = parser.parse_args()

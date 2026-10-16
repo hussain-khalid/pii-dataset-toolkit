@@ -13,5 +13,6 @@ Frozen benchmark id: `47c5878bf8034739`. Systems are ranked by F1; the interval 
 
 | Rank | System | Label set | F1 (95% CI) | Precision | Recall |
 | --- | --- | --- | --- | --- | --- |
-| 1 | empty | none | 0.000 (0.000 to 0.000) | 0.000 | 0.000 |
+| 1 | ocr-regex | none | 0.667 (0.584 to 0.763) | 0.608 | 0.738 |
+| 2 | empty | none | 0.000 (0.000 to 0.000) | 0.000 | 0.000 |
 

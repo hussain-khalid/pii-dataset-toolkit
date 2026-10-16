@@ -12,3 +12,11 @@ DOC_REQUIRED_KEYS = (
 )
 DOC_REQUIRED_FIELD_KEYS = ("label", "text", "bbox")
 DOC_TYPES = ("invoice", "form", "id_card")
+
+# Speech dataset (milestone 3)
+SPEECH_REQUIRED_KEYS = (
+    "id", "audio", "duration_s", "text", "spans",
+    "tts_voice", "source", "generator_version", "seed",
+)
+# start_s / end_s may be None for hard-format entities
+SPEECH_REQUIRED_SPAN_KEYS = ("start", "end", "label", "text", "start_s", "end_s")

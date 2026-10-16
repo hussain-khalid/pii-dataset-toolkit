@@ -16,10 +16,15 @@ jobs:
           python-version: "3.12"
           cache: pip
 
+      - name: Install Tesseract
+        run: sudo apt-get install -y tesseract-ocr
+
       - name: Install dependencies
         run: pip install -r requirements-dev.txt
 
       - name: Unit tests
+        env:
+          PIIKIT_SKIP_NETWORK: "1"
         run: pytest -v
 
       - name: Rebuild the datasets from their seeds
@@ -43,6 +48,18 @@ jobs:
         run: |
           python -m piikit.leaderboard --bench benchmark
           git diff --exit-code benchmark/LEADERBOARD.md
+
+      - name: Score the OCR baseline and check the leaderboard updates cleanly
+        run: |
+          python -m piikit.baselines docs-ocr --bench benchmark --out build/preds/docs_ocr.jsonl
+          python -m piikit.score docs --pred build/preds/docs_ocr.jsonl --name ocr-regex --save
+          python -m piikit.leaderboard --bench benchmark
+
+      - name: Generate and validate speech pilot
+        run: |
+          python -m piikit.speech_gen --text data/raw/text.jsonl --n 5 --seed 42 \
+            --out-dir data/raw/speech --concurrency 2
+          python -m piikit.validate_speech data/raw/speech/speech.jsonl
 
       - name: Keep the dataset card and manifest from this run
         uses: actions/upload-artifact@v4
