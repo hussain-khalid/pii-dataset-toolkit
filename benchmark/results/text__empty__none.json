@@ -1,0 +1,111 @@
+{
+  "clean_records": 14,
+  "false_alarm_rate_on_clean_records": 0.0,
+  "frozen_id": "47c5878bf8034739fa519c4221729efe6309e34b8f33fd2346966ba0555285b2",
+  "label_set": "none",
+  "metrics": {
+    "relaxed": {
+      "f1": 0.0,
+      "f1_ci95": [
+        0.0,
+        0.0
+      ],
+      "fn": 167,
+      "fp": 0,
+      "per_label": {
+        "ADDRESS": {
+          "f1": 0.0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "support": 24
+        },
+        "DATE_OF_BIRTH": {
+          "f1": 0.0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "support": 13
+        },
+        "EMAIL": {
+          "f1": 0.0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "support": 29
+        },
+        "ID_NUMBER": {
+          "f1": 0.0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "support": 13
+        },
+        "PERSON": {
+          "f1": 0.0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "support": 66
+        },
+        "PHONE": {
+          "f1": 0.0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "support": 22
+        }
+      },
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+    },
+    "strict": {
+      "f1": 0.0,
+      "f1_ci95": [
+        0.0,
+        0.0
+      ],
+      "fn": 167,
+      "fp": 0,
+      "per_label": {
+        "ADDRESS": {
+          "f1": 0.0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "support": 24
+        },
+        "DATE_OF_BIRTH": {
+          "f1": 0.0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "support": 13
+        },
+        "EMAIL": {
+          "f1": 0.0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "support": 29
+        },
+        "ID_NUMBER": {
+          "f1": 0.0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "support": 13
+        },
+        "PERSON": {
+          "f1": 0.0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "support": 66
+        },
+        "PHONE": {
+          "f1": 0.0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "support": 22
+        }
+      },
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+    }
+  },
+  "name": "empty",
+  "records": 97,
+  "task": "text"
+}

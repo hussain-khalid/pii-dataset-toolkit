@@ -1,0 +1,97 @@
+{"id": "txt-000003", "spans": [{"end": 51, "label": "EMAIL", "start": 27}, {"end": 80, "label": "PERSON", "start": 68}]}
+{"id": "txt-000024", "spans": [{"end": 20, "label": "PERSON", "start": 9}, {"end": 45, "label": "EMAIL", "start": 22}]}
+{"id": "txt-000025", "spans": [{"end": 20, "label": "PERSON", "start": 9}, {"end": 45, "label": "EMAIL", "start": 22}]}
+{"id": "txt-000036", "spans": [{"end": 35, "label": "ID_NUMBER", "start": 27}]}
+{"id": "txt-000038", "spans": []}
+{"id": "txt-000039", "spans": [{"end": 12, "label": "PERSON", "start": 0}, {"end": 31, "label": "PERSON", "start": 17}, {"end": 87, "label": "ADDRESS", "start": 65}]}
+{"id": "txt-000049", "spans": [{"end": 28, "label": "PERSON", "start": 16}, {"end": 77, "label": "EMAIL", "start": 56}]}
+{"id": "txt-000051", "spans": []}
+{"id": "txt-000060", "spans": []}
+{"id": "txt-000074", "spans": [{"end": 31, "label": "DATE_OF_BIRTH", "start": 15}, {"end": 56, "label": "PERSON", "start": 44}]}
+{"id": "txt-000076", "spans": []}
+{"id": "txt-000104", "spans": [{"end": 23, "label": "PERSON", "start": 9}, {"end": 37, "label": "ID_NUMBER", "start": 28}]}
+{"id": "txt-000105", "spans": [{"end": 54, "label": "EMAIL", "start": 23}, {"end": 97, "label": "ADDRESS", "start": 72}]}
+{"id": "txt-000125", "spans": [{"end": 37, "label": "EMAIL", "start": 9}, {"end": 54, "label": "PHONE", "start": 46}]}
+{"id": "txt-000153", "spans": [{"end": 14, "label": "PERSON", "start": 0}, {"end": 51, "label": "ADDRESS", "start": 24}]}
+{"id": "txt-000154", "spans": [{"end": 47, "label": "EMAIL", "start": 23}, {"end": 92, "label": "ADDRESS", "start": 65}]}
+{"id": "txt-000156", "spans": [{"end": 10, "label": "PERSON", "start": 0}, {"end": 49, "label": "ADDRESS", "start": 20}]}
+{"id": "txt-000163", "spans": [{"end": 31, "label": "PHONE", "start": 23}, {"end": 56, "label": "PERSON", "start": 44}]}
+{"id": "txt-000173", "spans": [{"end": 14, "label": "PERSON", "start": 0}, {"end": 48, "label": "ADDRESS", "start": 24}]}
+{"id": "txt-000200", "spans": [{"end": 24, "label": "PERSON", "start": 14}, {"end": 38, "label": "PHONE", "start": 28}]}
+{"id": "txt-000206", "spans": [{"end": 24, "label": "DATE_OF_BIRTH", "start": 14}, {"end": 61, "label": "ID_NUMBER", "start": 52}]}
+{"id": "txt-000213", "spans": [{"end": 57, "label": "EMAIL", "start": 27}, {"end": 86, "label": "PERSON", "start": 74}]}
+{"id": "txt-000220", "spans": []}
+{"id": "txt-000234", "spans": [{"end": 19, "label": "PERSON", "start": 9}, {"end": 33, "label": "ID_NUMBER", "start": 24}]}
+{"id": "txt-000237", "spans": [{"end": 33, "label": "PHONE", "start": 23}, {"end": 58, "label": "PERSON", "start": 46}]}
+{"id": "txt-000245", "spans": []}
+{"id": "txt-000277", "spans": [{"end": 25, "label": "DATE_OF_BIRTH", "start": 14}, {"end": 62, "label": "ID_NUMBER", "start": 53}]}
+{"id": "txt-000283", "spans": [{"end": 58, "label": "EMAIL", "start": 25}, {"end": 84, "label": "PHONE", "start": 76}]}
+{"id": "txt-000288", "spans": [{"end": 11, "label": "PERSON", "start": 0}, {"end": 46, "label": "ADDRESS", "start": 21}]}
+{"id": "txt-000294", "spans": [{"end": 25, "label": "DATE_OF_BIRTH", "start": 15}, {"end": 51, "label": "PERSON", "start": 38}]}
+{"id": "txt-000300", "spans": [{"end": 34, "label": "PHONE", "start": 23}, {"end": 60, "label": "PERSON", "start": 47}]}
+{"id": "txt-000303", "spans": [{"end": 26, "label": "PERSON", "start": 14}, {"end": 41, "label": "PHONE", "start": 30}]}
+{"id": "txt-000313", "spans": [{"end": 46, "label": "EMAIL", "start": 23}, {"end": 94, "label": "ADDRESS", "start": 64}]}
+{"id": "txt-000316", "spans": [{"end": 30, "label": "PERSON", "start": 16}, {"end": 89, "label": "EMAIL", "start": 58}]}
+{"id": "txt-000338", "spans": [{"end": 29, "label": "PERSON", "start": 18}, {"end": 60, "label": "ADDRESS", "start": 31}]}
+{"id": "txt-000350", "spans": [{"end": 25, "label": "DATE_OF_BIRTH", "start": 15}, {"end": 48, "label": "PERSON", "start": 38}]}
+{"id": "txt-000372", "spans": [{"end": 35, "label": "EMAIL", "start": 9}, {"end": 55, "label": "PHONE", "start": 44}]}
+{"id": "txt-000378", "spans": [{"end": 47, "label": "EMAIL", "start": 23}, {"end": 90, "label": "ADDRESS", "start": 65}]}
+{"id": "txt-000385", "spans": [{"end": 20, "label": "PERSON", "start": 9}, {"end": 34, "label": "ID_NUMBER", "start": 25}]}
+{"id": "txt-000388", "spans": [{"end": 13, "label": "PERSON", "start": 0}, {"end": 50, "label": "ADDRESS", "start": 23}]}
+{"id": "txt-000389", "spans": [{"end": 15, "label": "PERSON", "start": 0}, {"end": 49, "label": "ADDRESS", "start": 25}]}
+{"id": "txt-000393", "spans": []}
+{"id": "txt-000402", "spans": [{"end": 33, "label": "PERSON", "start": 18}, {"end": 62, "label": "ADDRESS", "start": 35}]}
+{"id": "txt-000407", "spans": [{"end": 30, "label": "PERSON", "start": 18}]}
+{"id": "txt-000408", "spans": [{"end": 53, "label": "EMAIL", "start": 25}, {"end": 81, "label": "PHONE", "start": 71}]}
+{"id": "txt-000427", "spans": [{"end": 48, "label": "EMAIL", "start": 25}, {"end": 77, "label": "PHONE", "start": 66}]}
+{"id": "txt-000431", "spans": [{"end": 27, "label": "PERSON", "start": 16}, {"end": 79, "label": "EMAIL", "start": 55}]}
+{"id": "txt-000449", "spans": [{"end": 33, "label": "PHONE", "start": 23}, {"end": 58, "label": "PERSON", "start": 46}]}
+{"id": "txt-000453", "spans": []}
+{"id": "txt-000464", "spans": [{"end": 36, "label": "PERSON", "start": 24}, {"end": 56, "label": "DATE_OF_BIRTH", "start": 43}, {"end": 74, "label": "PHONE", "start": 64}]}
+{"id": "txt-000467", "spans": [{"end": 21, "label": "PERSON", "start": 9}, {"end": 52, "label": "EMAIL", "start": 23}]}
+{"id": "txt-000469", "spans": [{"end": 32, "label": "PERSON", "start": 18}]}
+{"id": "txt-000488", "spans": [{"end": 29, "label": "PERSON", "start": 14}, {"end": 44, "label": "PHONE", "start": 33}]}
+{"id": "txt-000499", "spans": [{"end": 12, "label": "PERSON", "start": 0}, {"end": 49, "label": "ADDRESS", "start": 22}]}
+{"id": "txt-000536", "spans": [{"end": 30, "label": "DATE_OF_BIRTH", "start": 15}, {"end": 55, "label": "PERSON", "start": 43}]}
+{"id": "txt-000538", "spans": [{"end": 33, "label": "EMAIL", "start": 9}, {"end": 50, "label": "PHONE", "start": 42}]}
+{"id": "txt-000544", "spans": [{"end": 12, "label": "PERSON", "start": 0}, {"end": 50, "label": "ADDRESS", "start": 22}]}
+{"id": "txt-000574", "spans": [{"end": 11, "label": "PERSON", "start": 0}, {"end": 50, "label": "ADDRESS", "start": 21}]}
+{"id": "txt-000596", "spans": [{"end": 26, "label": "DATE_OF_BIRTH", "start": 15}, {"end": 51, "label": "PERSON", "start": 39}]}
+{"id": "txt-000603", "spans": []}
+{"id": "txt-000621", "spans": [{"end": 34, "label": "PHONE", "start": 23}, {"end": 60, "label": "PERSON", "start": 47}]}
+{"id": "txt-000626", "spans": []}
+{"id": "txt-000634", "spans": [{"end": 36, "label": "ID_NUMBER", "start": 27}]}
+{"id": "txt-000635", "spans": [{"end": 39, "label": "EMAIL", "start": 9}, {"end": 55, "label": "PHONE", "start": 48}]}
+{"id": "txt-000669", "spans": [{"end": 19, "label": "ID_NUMBER", "start": 10}, {"end": 46, "label": "PERSON", "start": 34}, {"end": 74, "label": "ADDRESS", "start": 50}]}
+{"id": "txt-000674", "spans": []}
+{"id": "txt-000675", "spans": [{"end": 55, "label": "EMAIL", "start": 27}, {"end": 85, "label": "PERSON", "start": 72}]}
+{"id": "txt-000686", "spans": [{"end": 31, "label": "PERSON", "start": 18}, {"end": 62, "label": "ADDRESS", "start": 33}]}
+{"id": "txt-000690", "spans": [{"end": 30, "label": "PERSON", "start": 18}]}
+{"id": "txt-000696", "spans": [{"end": 36, "label": "ID_NUMBER", "start": 27}]}
+{"id": "txt-000710", "spans": [{"end": 26, "label": "PERSON", "start": 16}, {"end": 84, "label": "EMAIL", "start": 54}]}
+{"id": "txt-000711", "spans": [{"end": 25, "label": "PERSON", "start": 14}, {"end": 40, "label": "PHONE", "start": 29}]}
+{"id": "txt-000716", "spans": [{"end": 28, "label": "PERSON", "start": 16}, {"end": 86, "label": "EMAIL", "start": 56}]}
+{"id": "txt-000722", "spans": [{"end": 27, "label": "PERSON", "start": 14}, {"end": 42, "label": "PHONE", "start": 31}]}
+{"id": "txt-000723", "spans": [{"end": 19, "label": "ID_NUMBER", "start": 10}, {"end": 49, "label": "PERSON", "start": 34}, {"end": 80, "label": "ADDRESS", "start": 53}]}
+{"id": "txt-000727", "spans": [{"end": 24, "label": "DATE_OF_BIRTH", "start": 14}, {"end": 60, "label": "ID_NUMBER", "start": 52}]}
+{"id": "txt-000730", "spans": []}
+{"id": "txt-000745", "spans": [{"end": 19, "label": "ID_NUMBER", "start": 10}, {"end": 50, "label": "PERSON", "start": 34}, {"end": 79, "label": "ADDRESS", "start": 54}]}
+{"id": "txt-000746", "spans": [{"end": 35, "label": "PERSON", "start": 24}, {"end": 52, "label": "DATE_OF_BIRTH", "start": 42}, {"end": 68, "label": "PHONE", "start": 60}]}
+{"id": "txt-000750", "spans": []}
+{"id": "txt-000751", "spans": [{"end": 27, "label": "PERSON", "start": 18}]}
+{"id": "txt-000754", "spans": [{"end": 22, "label": "PERSON", "start": 9}, {"end": 48, "label": "EMAIL", "start": 24}]}
+{"id": "txt-000764", "spans": [{"end": 38, "label": "PERSON", "start": 24}, {"end": 56, "label": "DATE_OF_BIRTH", "start": 45}, {"end": 74, "label": "PHONE", "start": 64}]}
+{"id": "txt-000776", "spans": [{"end": 26, "label": "PERSON", "start": 14}, {"end": 41, "label": "PHONE", "start": 30}]}
+{"id": "txt-000777", "spans": [{"end": 14, "label": "PERSON", "start": 0}, {"end": 51, "label": "ADDRESS", "start": 24}]}
+{"id": "txt-000782", "spans": [{"end": 33, "label": "EMAIL", "start": 9}, {"end": 53, "label": "PHONE", "start": 42}]}
+{"id": "txt-000791", "spans": [{"end": 28, "label": "PERSON", "start": 16}, {"end": 78, "label": "EMAIL", "start": 56}]}
+{"id": "txt-000803", "spans": [{"end": 19, "label": "PERSON", "start": 9}, {"end": 45, "label": "EMAIL", "start": 21}]}
+{"id": "txt-000809", "spans": [{"end": 10, "label": "PERSON", "start": 0}, {"end": 27, "label": "PERSON", "start": 15}, {"end": 89, "label": "ADDRESS", "start": 61}]}
+{"id": "txt-000868", "spans": [{"end": 13, "label": "PERSON", "start": 0}, {"end": 48, "label": "ADDRESS", "start": 23}]}
+{"id": "txt-000872", "spans": [{"end": 28, "label": "PERSON", "start": 16}, {"end": 78, "label": "EMAIL", "start": 56}]}
+{"id": "txt-000889", "spans": []}
+{"id": "txt-000897", "spans": [{"end": 25, "label": "DATE_OF_BIRTH", "start": 14}, {"end": 62, "label": "ID_NUMBER", "start": 53}]}
+{"id": "txt-000899", "spans": [{"end": 25, "label": "DATE_OF_BIRTH", "start": 15}, {"end": 50, "label": "PERSON", "start": 38}]}
+{"id": "txt-000919", "spans": [{"end": 27, "label": "PERSON", "start": 16}, {"end": 77, "label": "EMAIL", "start": 55}]}
+{"id": "txt-000968", "spans": [{"end": 30, "label": "PERSON", "start": 16}, {"end": 80, "label": "EMAIL", "start": 58}]}
+{"id": "txt-000999", "spans": [{"end": 31, "label": "PERSON", "start": 18}, {"end": 60, "label": "ADDRESS", "start": 33}]}

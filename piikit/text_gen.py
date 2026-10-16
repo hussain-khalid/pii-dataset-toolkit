@@ -19,6 +19,7 @@ from piikit.schema import LABELS
 
 SOURCE = "synthetic/text_gen"
 NEGATIVE_RATE = 0.20  # share of records that contain no PII
+HARD_RATE = 0.25      # share of values written in a less common format (typos aside)
 
 FIRST_NAMES = [
     "Anna", "Liam", "Sofia", "Noah", "Maya", "Omar", "Elena", "Jonas", "Priya", "Lucas",
@@ -80,13 +81,26 @@ TEMPLATES = {
     "n12": "We received order #{ORDER_NO} and will ship the {PRODUCT} on {WEEKDAY}.",
     "n13": "Opening hours are 09:00 to 17:00, Monday to {WEEKDAY}.",
     "n14": "Please allow up to {ORDER_NO} seconds for the page to refresh.",
+    "n15": "The report is due on {DATE}.",
+    "n16": "Your subscription renews on {DATE}, no action is needed.",
+    "n17": "Please send the parcel to {ORG} reception.",
+    "n18": "{ORG} will confirm the delivery date on {WEEKDAY}.",
+    "n19": "Invoice dated {DATE} has been paid in full.",
 }
 
 PLACEHOLDER = re.compile(r"\{([A-Z_]+)\}")
 
 
+STREET_ABBREVIATIONS = {"Street": "St", "Road": "Rd", "Avenue": "Ave", "Lane": "Ln",
+                        "Drive": "Dr", "Court": "Ct"}
+SHORT_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+
+
 def make_person(rng):
-    return f"{rng.choice(FIRST_NAMES)} {rng.choice(LAST_NAMES)}"
+    first, last = rng.choice(FIRST_NAMES), rng.choice(LAST_NAMES)
+    if rng.random() < HARD_RATE:
+        return rng.choice([f"{last}, {first}", f"{first} {last}".lower(), f"{first} {last}".upper()])
+    return f"{first} {last}"
 
 
 def make_email(rng):
@@ -94,31 +108,53 @@ def make_email(rng):
     last = rng.choice(LAST_NAMES).lower()
     sep = rng.choice([".", "_", ""])
     suffix = rng.choice(["", "", str(rng.randint(1, 99))])
-    return f"{first}{sep}{last}{suffix}@{rng.choice(EMAIL_DOMAINS)}"
+    local, domain = f"{first}{sep}{last}{suffix}", rng.choice(EMAIL_DOMAINS)
+    if rng.random() < HARD_RATE:
+        return f"{local} [at] {domain}"
+    return f"{local}@{domain}"
 
 
 def make_phone(rng):
     line = f"01{rng.randint(0, 99):02d}"  # 0100-0199, the range reserved for fiction
+    if rng.random() < HARD_RATE:
+        return rng.choice([f"555.{line}", f"555{line}", f"+1.555.{line}"])
     return rng.choice([f"555-{line}", f"+1-555-{line}", f"(555) {line}", f"+1 555 {line}"])
 
 
 def make_address(rng):
-    return f"{rng.randint(1, 999)} {rng.choice(STREETS)}, {rng.choice(CITIES)}"
+    number, street, city = rng.randint(1, 999), rng.choice(STREETS), rng.choice(CITIES)
+    if rng.random() < HARD_RATE:
+        name, kind = street.rsplit(" ", 1)
+        if kind in STREET_ABBREVIATIONS:
+            return f"{number} {name} {STREET_ABBREVIATIONS[kind]}, {city}"
+        return f"{number} {street} {city}"
+    return f"{number} {street}, {city}"
 
 
 def make_id_number(rng):
     letters = "".join(rng.choice("ABCDEFGHJKLMNPQRSTUVWXYZ") for _ in range(2))
-    return f"{letters}-{rng.randint(100000, 999999)}"
+    digits = rng.randint(100000, 999999)
+    if rng.random() < HARD_RATE:
+        return rng.choice([f"{letters} {digits}", f"{letters}{digits}"])
+    return f"{letters}-{digits}"
 
 
-def make_dob(rng):
-    year, month, day = rng.randint(1950, 2005), rng.randint(1, 12), rng.randint(1, 28)
+def _date_text(rng, year, month, day, hard):
+    if hard:
+        return rng.choice([f"{day:02d}.{month:02d}.{year}",
+                           f"{day} {SHORT_MONTHS[month - 1]} {year}",
+                           f"{SHORT_MONTHS[month - 1]} {day} {year}"])
     style = rng.choice(["iso", "slash", "long"])
     if style == "iso":
         return f"{year}-{month:02d}-{day:02d}"
     if style == "slash":
         return f"{day:02d}/{month:02d}/{year}"
     return f"{MONTHS[month - 1]} {day}, {year}"
+
+
+def make_dob(rng):
+    year, month, day = rng.randint(1950, 2005), rng.randint(1, 12), rng.randint(1, 28)
+    return _date_text(rng, year, month, day, rng.random() < HARD_RATE)
 
 
 WEEKDAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
@@ -146,6 +182,20 @@ def make_product(rng):
     return rng.choice(PRODUCTS)
 
 
+ORGS = ["Northgate Supplies", "Brookfield Logistics", "Eastvale Hardware", "Riverton Foods",
+        "Stonebridge Office Goods", "Fairhaven Printing"]
+
+
+def make_org(rng):
+    return rng.choice(ORGS)
+
+
+def make_date(rng):
+    """An ordinary date (due dates, renewals). Same shapes as birth dates; only context differs."""
+    return _date_text(rng, rng.randint(2026, 2028), rng.randint(1, 12), rng.randint(1, 28),
+                      rng.random() < 0.3)
+
+
 def make_version(rng):
     return f"{rng.randint(1, 9)}.{rng.randint(0, 20)}.{rng.randint(0, 9)}"
 
@@ -158,6 +208,8 @@ FILLERS = {
     "AMOUNT": make_amount,
     "PRODUCT": make_product,
     "VERSION": make_version,
+    "DATE": make_date,
+    "ORG": make_org,
 }
 
 GENERATORS = {

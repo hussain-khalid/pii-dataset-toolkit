@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements-dev.txt
+
+      - name: Unit tests
+        run: pytest -v
+
+      - name: Rebuild the datasets from their seeds
+        run: |
+          python -m piikit.text_gen --n 1000 --seed 42 --out data/raw/text.jsonl
+          python -m piikit.validate data/raw/text.jsonl
+          python -m piikit.doc_gen --n 200 --seed 42 --out-dir data/raw/docs
+          python -m piikit.validate_docs data/raw/docs/docs.jsonl
+
+      - name: Build and validate the release
+        run: |
+          python -m piikit.build_release --text data/raw/text.jsonl \
+            --docs data/raw/docs/docs.jsonl --out-dir data/release/v0.2.0 \
+            --seed 42 --version 0.2.0
+          python -m piikit.validate_release data/release/v0.2.0
+
+      - name: Check the committed benchmark is unchanged
+        run: python -m piikit.freeze verify benchmark
+
+      - name: Check the committed leaderboard matches the committed results
+        run: |
+          python -m piikit.leaderboard --bench benchmark
+          git diff --exit-code benchmark/LEADERBOARD.md
+
+      - name: Keep the dataset card and manifest from this run
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-metadata
+          path: |
+            data/release/v0.2.0/DATASET_CARD.md
+            data/release/v0.2.0/MANIFEST.json
+            data/release/v0.2.0/PROVENANCE.json
+            data/release/v0.2.0/dedup_report.json

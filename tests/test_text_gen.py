@@ -1,4 +1,5 @@
 import hashlib
+import json
 import tempfile
 from pathlib import Path
 
@@ -60,7 +61,21 @@ def test_emails_use_reserved_example_domains_only():
     for record in generate(500, seed=42):
         for span in record["spans"]:
             if span["label"] == "EMAIL":
-                assert span["text"].split("@")[1] in {"example.com", "example.org", "example.net"}
+                domain = span["text"].replace(" [at] ", "@").split("@")[1]
+                assert domain in {"example.com", "example.org", "example.net"}
+
+
+def test_some_values_use_less_common_formats():
+    spans = [s for r in generate(1000, seed=42) for s in r["spans"]]
+    assert any(" [at] " in s["text"] for s in spans if s["label"] == "EMAIL")
+    assert any(s["text"] == s["text"].lower() for s in spans if s["label"] == "PERSON")
+    assert any("@" in s["text"] for s in spans if s["label"] == "EMAIL")  # common form remains
+
+
+def test_ordinary_dates_appear_in_records_without_pii():
+    import re
+    clean = [r["text"] for r in generate(1000, seed=42) if not r["spans"]]
+    assert any(re.search(r"\d{4}-\d{2}-\d{2}|\d{2}/\d{2}/\d{4}", t) for t in clean)
 
 
 def test_phone_numbers_use_fictional_range():

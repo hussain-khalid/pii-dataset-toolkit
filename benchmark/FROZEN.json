@@ -1,0 +1,33 @@
+{
+  "files": {
+    "docs/gold.jsonl": "6e6054f7a3e58b0959781eb217d7774fe7d09d2efc5a31182a58586accf0ca3f",
+    "docs/images/doc-000002.png": "fa152850aaf34601b7b31880ae3fe013db381e69cd9cf3153b9e393f7d7d091c",
+    "docs/images/doc-000020.png": "284bb7997c07570a4742b383159aaa9fc44774dd0b13debdd007e8bd778f8c9c",
+    "docs/images/doc-000026.png": "a83c19f26cccea8a0bae74f400236ff25ece6fd0d63c496a51d11ed25d1ea550",
+    "docs/images/doc-000031.png": "646025738123008ed6a91e2b7f1cab4dd462a19a6569b74baaf40918d07cfa28",
+    "docs/images/doc-000036.png": "cedf567011d0feca686787a0839ecf6976044ebec075b7955a11b7cdc46a48bd",
+    "docs/images/doc-000040.png": "58dc6645b7a0f68fc947e22e9c819e08b02c34f04e68d6237c179a0ce69c9169",
+    "docs/images/doc-000081.png": "d838543aef24ad68c7c7fdb338123e924bb13061e06bb40d1a86c6d11d12b3df",
+    "docs/images/doc-000093.png": "c53ba0d9cf8a59c132d94a1dac7f5bd46ef2aaa97beeee3ff284ae57d8a37864",
+    "docs/images/doc-000099.png": "17daac14f37c45b26d145b7186b6966dead3f31d91c42e0df27e6a68ba2f70d3",
+    "docs/images/doc-000101.png": "eb89e3cb85b9ca48ebe806c52b9a8c70902b458e10833b9988d4c440ff4777bc",
+    "docs/images/doc-000128.png": "7af25eda65062ea0c587df96a598f2cb124b0141378b24ba387d2c5446ae5fcc",
+    "docs/images/doc-000151.png": "3f7d4886f2de5001941f9cec6c46b10f579c65d6a891a4e57baf640acdf9b406",
+    "docs/images/doc-000169.png": "b3f61fede48529e68b2b6a01c81bf27162aaab573965278f0a21226fdf0afb7b",
+    "docs/images/doc-000195.png": "4dc24ec21b48d2b786b7f4b2dcd63e8a6b98c520543ba54dbb3b7350a3376781",
+    "docs/images/doc-000196.png": "3bda36d85b9cfa59d2b1a50c27374d30cb27561f0ccb751a7a8f664b3745e415",
+    "docs/inputs.jsonl": "559d797d943a71124a0f1ba1112faf1a0736ac6cf48fb72b868d03574f9cc95a",
+    "text/gold.jsonl": "968a19c4e90e478f4dff9e2ad4cf9bbe8d10b5b0b12d273535565aa3d868cd11",
+    "text/inputs.jsonl": "644faed0621586a86477a070d319f505123d6752ac6d0891a8b0335478afd43f"
+  },
+  "frozen_id": "47c5878bf8034739fa519c4221729efe6309e34b8f33fd2346966ba0555285b2",
+  "records": {
+    "docs": 15,
+    "text": 97
+  },
+  "release_test_files": {
+    "docs/test.jsonl": "d799591814c723feaaaf0554db01332affb04d5d6aaf049a214ea1123faba2da",
+    "text/test.jsonl": "162df3d6ec2493367a3af7ac168f4fe8e95c64285d11da54780695981a0d7e73"
+  },
+  "release_version": "0.2.0"
+}

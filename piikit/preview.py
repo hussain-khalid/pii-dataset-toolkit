@@ -2,6 +2,11 @@
 
 Usage:
     python -m piikit.preview data/raw/docs/docs.jsonl --n 6 --out-dir docs/images/previews
+    python -m piikit.preview data/raw/docs/docs.jsonl --per-type --out-dir docs/images/previews
+
+--per-type writes one example per document type under stable names
+(example_invoice.png, example_form.png, example_id_card.png), which is what the
+README links to.
 """
 
 import argparse
@@ -33,20 +38,38 @@ def render_preview(record: dict, base_dir: Path) -> Image.Image:
     return image
 
 
+def write_previews(records, base_dir: Path, out_dir: Path, n: int = 6, per_type: bool = False):
+    """Write preview images and return their paths."""
+    out_dir.mkdir(parents=True, exist_ok=True)
+    if per_type:
+        first = {}
+        for record in records:
+            first.setdefault(record["doc_type"], record)
+        chosen = [(f"example_{t}.png", r) for t, r in sorted(first.items())]
+    else:
+        chosen = [(f"{r['id']}_{r['doc_type']}_boxes.png", r) for r in records[:n]]
+
+    paths = []
+    for name, record in chosen:
+        path = out_dir / name
+        render_preview(record, base_dir).save(path)
+        paths.append(path)
+    return paths
+
+
 def main():
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(description=__doc__,
+                                     formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("path", type=Path)
     parser.add_argument("--n", type=int, default=6)
+    parser.add_argument("--per-type", action="store_true")
     parser.add_argument("--out-dir", type=Path, default=Path("docs/images/previews"))
     args = parser.parse_args()
 
-    args.out_dir.mkdir(parents=True, exist_ok=True)
     with args.path.open(encoding="utf-8") as f:
-        records = [json.loads(line) for line in f if line.strip()][: args.n]
-    for record in records:
-        out = args.out_dir / f"{record['id']}_{record['doc_type']}_boxes.png"
-        render_preview(record, args.path.parent).save(out)
-    print(f"Wrote {len(records)} preview images to {args.out_dir}")
+        records = [json.loads(line) for line in f if line.strip()]
+    paths = write_previews(records, args.path.parent, args.out_dir, args.n, args.per_type)
+    print(f"Wrote {len(paths)} preview images to {args.out_dir}")
 
 
 if __name__ == "__main__":

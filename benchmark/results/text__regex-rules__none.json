@@ -1,0 +1,111 @@
+{
+  "clean_records": 14,
+  "false_alarm_rate_on_clean_records": 0.1429,
+  "frozen_id": "47c5878bf8034739fa519c4221729efe6309e34b8f33fd2346966ba0555285b2",
+  "label_set": "none",
+  "metrics": {
+    "relaxed": {
+      "f1": 0.8055,
+      "f1_ci95": [
+        0.7525,
+        0.8534
+      ],
+      "fn": 49,
+      "fp": 8,
+      "per_label": {
+        "ADDRESS": {
+          "f1": 0.8571,
+          "precision": 1.0,
+          "recall": 0.75,
+          "support": 24
+        },
+        "DATE_OF_BIRTH": {
+          "f1": 0.7273,
+          "precision": 0.8889,
+          "recall": 0.6154,
+          "support": 13
+        },
+        "EMAIL": {
+          "f1": 0.766,
+          "precision": 1.0,
+          "recall": 0.6207,
+          "support": 29
+        },
+        "ID_NUMBER": {
+          "f1": 0.8182,
+          "precision": 1.0,
+          "recall": 0.6923,
+          "support": 13
+        },
+        "PERSON": {
+          "f1": 0.7833,
+          "precision": 0.8704,
+          "recall": 0.7121,
+          "support": 66
+        },
+        "PHONE": {
+          "f1": 0.9,
+          "precision": 1.0,
+          "recall": 0.8182,
+          "support": 22
+        }
+      },
+      "precision": 0.9365,
+      "recall": 0.7066,
+      "tp": 118
+    },
+    "strict": {
+      "f1": 0.8055,
+      "f1_ci95": [
+        0.7525,
+        0.8534
+      ],
+      "fn": 49,
+      "fp": 8,
+      "per_label": {
+        "ADDRESS": {
+          "f1": 0.8571,
+          "precision": 1.0,
+          "recall": 0.75,
+          "support": 24
+        },
+        "DATE_OF_BIRTH": {
+          "f1": 0.7273,
+          "precision": 0.8889,
+          "recall": 0.6154,
+          "support": 13
+        },
+        "EMAIL": {
+          "f1": 0.766,
+          "precision": 1.0,
+          "recall": 0.6207,
+          "support": 29
+        },
+        "ID_NUMBER": {
+          "f1": 0.8182,
+          "precision": 1.0,
+          "recall": 0.6923,
+          "support": 13
+        },
+        "PERSON": {
+          "f1": 0.7833,
+          "precision": 0.8704,
+          "recall": 0.7121,
+          "support": 66
+        },
+        "PHONE": {
+          "f1": 0.9,
+          "precision": 1.0,
+          "recall": 0.8182,
+          "support": 22
+        }
+      },
+      "precision": 0.9365,
+      "recall": 0.7066,
+      "tp": 118
+    }
+  },
+  "name": "regex-rules",
+  "records": 97,
+  "task": "text"
+}
