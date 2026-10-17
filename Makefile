@@ -7,7 +7,7 @@ VERSION ?= 0.2.0
 RELEASE := data/release/v$(VERSION)
 PREDS := build/preds
 
-.PHONY: all data speech release previews benchmark test refreeze clean
+.PHONY: all data speech release previews benchmark leaderboard-html test refreeze clean
 
 all: data speech release previews benchmark test
 
@@ -45,6 +45,10 @@ benchmark: release
 	$(PYTHON) -m piikit.score docs --pred $(PREDS)/docs_empty.jsonl --name empty --save
 	$(PYTHON) -m piikit.score docs --pred $(PREDS)/docs_ocr.jsonl   --name ocr-regex --save
 	$(PYTHON) -m piikit.leaderboard --bench benchmark
+	$(PYTHON) -m piikit.leaderboard_html --bench benchmark --out docs/leaderboard.html
+
+leaderboard-html:
+	$(PYTHON) -m piikit.leaderboard_html --bench benchmark --out docs/leaderboard.html
 
 test:
 	$(PYTHON) -m pytest -q

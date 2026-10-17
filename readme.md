@@ -56,8 +56,8 @@ flowchart LR
 
 | Module | Purpose |
 | --- | --- |
-| `piikit.text_gen`, `piikit.doc_gen` | Seeded generators for text records and document images |
-| `piikit.speech_gen` | Converts text records to MP3 audio (Edge TTS) and aligns PII spans to millisecond timestamps |
+| `piikit.text_gen`, `piikit.doc_gen` | Seeded generators for text records and document images (supports `--locale`, `--hard`, `--noisy`, `--font`) |
+| `piikit.speech_gen` | Converts text records to MP3 audio (Edge TTS) and aligns PII spans to millisecond timestamps (supports `--locale`) |
 | `piikit.validate`, `piikit.validate_docs` | Validators for text and document datasets |
 | `piikit.validate_speech` | Validates speech records: keys, audio file, span slices, time bounds |
 | `piikit.dedup`, `piikit.splits` | Exact and near-duplicate removal; hash-based splits |
@@ -66,6 +66,10 @@ flowchart LR
 | `piikit.freeze`, `piikit.score` | Freeze the test split; score predictions against it |
 | `piikit.baselines`, `piikit.leaderboard`, `piikit.label_map` | Baselines, ranking, label mappings |
 | `piikit.systems.ocr_baseline` | Tesseract OCR baseline: word-level bounding boxes via pytesseract, regex rules, pixel-box output |
+| `piikit.systems.ner_baseline` | Neural NER baseline: spaCy English transformer/sm model mapped to PII schema with regex fallback |
+| `piikit.leaderboard_html` | Self-contained dark-themed HTML leaderboard generator with sortable tables and medal ranks |
+| `piikit.submit` | One-command submission CLI: validates, scores, updates markdown and HTML leaderboards |
+| `piikit.push_hub` | Converts a release into a Hugging Face `DatasetDict` and pushes to the HF Hub |
 | `piikit.preview` | Draws labelled boxes on documents for visual checks |
 
 ## Data formats
@@ -211,11 +215,48 @@ directly comparable.
 | `DATE_OF_BIRTH` | `DATE_TIME` (lossy) | not mapped |
 | `ID_NUMBER` | not mapped | not mapped |
 
-**Baselines.** `text-empty` and `docs-empty` predict nothing and give the floor. `text-regex`
-is a rule-based system written with knowledge of the generator's common formats, so treat its
-score as an optimistic reference for simple rules. `docs-ocr` runs Tesseract via `pytesseract`,
-applies the same regex rules to the extracted word tokens, and maps matches back to pixel
-bounding boxes — it is included as a concrete document baseline (see [benchmark/LEADERBOARD.md](benchmark/LEADERBOARD.md)).
+**Baselines.**
+- `text-empty` and `docs-empty` predict nothing and establish the performance floor.
+- `text-regex` is a rule-based system written with knowledge of the generator's common formats, serving as an optimistic reference for simple rules.
+- `text-ner` is a neural baseline powered by spaCy's English NER (`en_core_web_trf` with fallback to `en_core_web_sm`), mapping spaCy entity types onto the dataset schema with regex fallback for high-precision formats (emails, phone numbers, IDs).
+- `docs-ocr` runs Tesseract via `pytesseract`, applies regex rules to extracted word tokens, and maps matches back to pixel bounding boxes.
+
+See [benchmark/LEADERBOARD.md](benchmark/LEADERBOARD.md) and the interactive [docs/leaderboard.html](docs/leaderboard.html).
+
+### Submitting a system to the leaderboard
+
+Use the one-command submission CLI to evaluate any prediction file against the frozen benchmark:
+
+```bash
+python -m piikit.submit --task text \
+    --pred build/preds/my_system.jsonl \
+    --name "My System" \
+    --html
+```
+
+This verifies the benchmark integrity, scores predictions with strict and relaxed micro-F1 and 95% bootstrap confidence intervals, writes the result to `benchmark/results/`, and updates both `benchmark/LEADERBOARD.md` and `docs/leaderboard.html`.
+
+### Publishing to Hugging Face Hub
+
+Push a validated release to the Hugging Face Hub as a public dataset:
+
+```bash
+python -m piikit.push_hub --release data/release/v0.2.0 \
+    --repo your-username/pii-dataset \
+    --token $HF_TOKEN \
+    --with-images
+```
+
+### Dataset Versioning with DVC
+
+To track data releases with DVC:
+
+```bash
+dvc init
+dvc add data/release/v0.2.0
+git add data/release/v0.2.0.dvc .gitignore
+git commit -m "Track dataset release v0.2.0 with DVC"
+```
 
 ## Findings
 

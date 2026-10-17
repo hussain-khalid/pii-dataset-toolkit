@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PII Dataset Leaderboard</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #0f1117;
+    color: #e2e8f0;
+    min-height: 100vh;
+    padding: 2rem 1rem;
+  }
+  .container { max-width: 1100px; margin: 0 auto; }
+  header { text-align: center; margin-bottom: 3rem; }
+  h1 {
+    font-size: 2.4rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 0.5rem;
+  }
+  .subtitle { color: #94a3b8; font-size: 0.95rem; }
+  .frozen-id {
+    display: inline-block;
+    margin-top: 0.75rem;
+    background: #1e2640;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    padding: 0.3rem 0.8rem;
+    font-family: monospace;
+    font-size: 0.85rem;
+    color: #7dd3fc;
+  }
+  .section { margin-bottom: 2.5rem; }
+  h2 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #cbd5e1;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #1e2640;
+  }
+  .table-wrap { overflow-x: auto; border-radius: 12px; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+  }
+  thead th {
+    background: #1e2640;
+    color: #94a3b8;
+    font-weight: 600;
+    padding: 0.75rem 1rem;
+    text-align: left;
+    white-space: nowrap;
+  }
+  tbody tr {
+    border-bottom: 1px solid #1e2640;
+    transition: background 0.15s;
+  }
+  tbody tr:hover { background: #1a2035; }
+  tbody tr:first-child td { color: #f8fafc; }
+  tbody td { padding: 0.75rem 1rem; }
+  .rank { font-weight: 700; color: #a78bfa; }
+  .f1 { font-weight: 700; color: #34d399; }
+  .ci { font-size: 0.8rem; color: #64748b; }
+  .zero { color: #475569; }
+  .medal-1::before { content: '🥇 '; }
+  .medal-2::before { content: '🥈 '; }
+  .medal-3::before { content: '🥉 '; }
+  .bar-wrap { background: #1e2640; border-radius: 4px; height: 6px; width: 100px; display: inline-block; vertical-align: middle; margin-left: 8px; }
+  .bar { background: linear-gradient(90deg, #667eea, #764ba2); border-radius: 4px; height: 6px; }
+  footer { text-align: center; color: #475569; font-size: 0.8rem; margin-top: 3rem; }
+  .tag {
+    display: inline-block;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    background: #1e2640;
+    color: #7dd3fc;
+    border: 1px solid #2d3f5e;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>PII Dataset Leaderboard</h1>
+    <p class="subtitle">Benchmark results for synthetic PII detection · Text spans &amp; Document fields</p>
+    <span class="frozen-id">frozen_id: 47c5878bf8034739</span>
+  </header>
+  
+<div class="section">
+  <h2>📝 Text PII Span Detection</h2>
+  <p style="color:#64748b;font-size:0.85rem;margin-bottom:1rem;">
+    Strict: exact span &amp; label. Relaxed: same label with ≥50% character overlap.
+    95% CI via bootstrap (1,000 resamples).
+  </p>
+  <div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>System</th>
+        <th>Label set</th>
+        <th>Strict F1</th>
+        <th>95% CI</th>
+        <th>Precision</th>
+        <th>Recall</th>
+        <th>False alarms (no-PII)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td class="rank medal-1">1</td><td><strong>regex-rules</strong></td><td><span class="tag">none</span></td><td class="f1">0.805<span class="bar-wrap"><span class="bar" style="width:80px"></span></span></td><td class="ci">0.752–0.853</td><td>0.936</td><td>0.707</td><td>14.3%</td></tr>
+      <tr><td class="rank medal-2">2</td><td><strong>empty</strong></td><td><span class="tag">none</span></td><td class="zero">0.000<span class="bar-wrap"><span class="bar" style="width:0px"></span></span></td><td class="ci">0.000–0.000</td><td>0.000</td><td>0.000</td><td>0.0%</td></tr>
+    </tbody>
+  </table>
+  </div>
+</div>
+<div class="section">
+  <h2>🖼 Document Field Detection (IoU ≥ 0.5)</h2>
+  <p style="color:#64748b;font-size:0.85rem;margin-bottom:1rem;">
+    Bounding box match: same label, IoU ≥ 0.5.
+    95% CI via bootstrap (1,000 resamples).
+  </p>
+  <div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>System</th>
+        <th>Label set</th>
+        <th>F1</th>
+        <th>95% CI</th>
+        <th>Precision</th>
+        <th>Recall</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td class="rank medal-1">1</td><td><strong>ocr-regex</strong></td><td><span class="tag">none</span></td><td class="f1">0.667<span class="bar-wrap"><span class="bar" style="width:66px"></span></span></td><td class="ci">0.584–0.763</td><td>0.608</td><td>0.738</td></tr>
+      <tr><td class="rank medal-2">2</td><td><strong>empty</strong></td><td><span class="tag">none</span></td><td class="zero">0.000<span class="bar-wrap"><span class="bar" style="width:0px"></span></span></td><td class="ci">0.000–0.000</td><td>0.000</td><td>0.000</td></tr>
+    </tbody>
+  </table>
+  </div>
+</div>
+  <footer>
+    Generated by <code>piikit.leaderboard_html</code> &middot;
+    Benchmark frozen with SHA-256 integrity checks &middot;
+    95% bootstrap confidence intervals over test records
+  </footer>
+</div>
+</body>
+</html>

@@ -76,6 +76,13 @@ VOICES = [
     "en-AU-WilliamNeural",
 ]
 
+LOCALE_VOICES = {
+    "en": VOICES,
+    "de": ["de-DE-KatjaNeural", "de-DE-KillianNeural"],
+    "fr": ["fr-FR-DeniseNeural", "fr-FR-HenriNeural"],
+    "es": ["es-ES-ElviraNeural", "es-ES-AlvaroNeural"],
+}
+
 _100NS = 10_000_000  # 100-nanosecond ticks per second
 
 
@@ -200,10 +207,12 @@ async def _synthesize(text: str, voice: str, out_path: Path) -> list[dict]:
 # Per-record and batch generation
 # ---------------------------------------------------------------------------
 
-def _pick_voice(record: dict) -> str:
+def _pick_voice(record: dict, locale: str | None = None) -> str:
     """Pick a voice deterministically from the record's seed and index."""
+    rec_locale = locale or record.get("locale") or "en"
+    voice_pool = LOCALE_VOICES.get(rec_locale, VOICES)
     rng = random.Random(f"{record['seed']}-voice-{record['id']}")
-    return rng.choice(VOICES)
+    return rng.choice(voice_pool)
 
 
 def _duration_from_cues(cues: list[dict]) -> float:
@@ -214,8 +223,9 @@ def _duration_from_cues(cues: list[dict]) -> float:
 
 
 async def _generate_record_async(record: dict, out_dir: Path,
-                                  voice: str | None = None) -> dict:
-    voice = voice or _pick_voice(record)
+                                  voice: str | None = None,
+                                  locale: str | None = None) -> dict:
+    voice = voice or _pick_voice(record, locale=locale)
     audio_rel = f"audio/{record['id']}.mp3"
     audio_path = out_dir / audio_rel
 
@@ -223,7 +233,7 @@ async def _generate_record_async(record: dict, out_dir: Path,
     timed_spans = _align_spans(record.get("spans", []), cues)
     duration_s = _duration_from_cues(cues)
 
-    return {
+    rec = {
         "id": record["id"],
         "audio": audio_rel,
         "duration_s": duration_s,
@@ -235,30 +245,38 @@ async def _generate_record_async(record: dict, out_dir: Path,
         "seed": record["seed"],
         "template_id": record.get("template_id"),
     }
+    if "locale" in record:
+        rec["locale"] = record["locale"]
+    elif locale and locale != "en":
+        rec["locale"] = locale
+    return rec
 
 
 def generate_speech_record(record: dict, out_dir: Path,
-                            voice: str | None = None) -> dict:
+                            voice: str | None = None,
+                            locale: str | None = None) -> dict:
     """Synchronous wrapper around the async generator (convenience function)."""
-    return asyncio.run(_generate_record_async(record, out_dir, voice))
+    return asyncio.run(_generate_record_async(record, out_dir, voice, locale=locale))
 
 
 async def _generate_batch_async(records: list[dict], out_dir: Path,
                                  voice: str | None = None,
-                                 concurrency: int = 4) -> list[dict]:
+                                 concurrency: int = 4,
+                                 locale: str | None = None) -> list[dict]:
     """Generate multiple records with bounded concurrency."""
     sem = asyncio.Semaphore(concurrency)
 
     async def _one(record):
         async with sem:
-            return await _generate_record_async(record, out_dir, voice)
+            return await _generate_record_async(record, out_dir, voice, locale=locale)
 
     return await asyncio.gather(*[_one(r) for r in records])
 
 
 def generate_speech(records: list[dict], out_dir: Path,
                     voice: str | None = None,
-                    concurrency: int = 4) -> list[dict]:
+                    concurrency: int = 4,
+                    locale: str | None = None) -> list[dict]:
     """Generate speech for a list of text records.
 
     Args:
@@ -268,11 +286,12 @@ def generate_speech(records: list[dict], out_dir: Path,
         voice:       Edge TTS voice name.  If None, one is picked
                      deterministically per record from VOICES.
         concurrency: maximum parallel TTS requests.
+        locale:      optional locale ('en', 'de', 'fr', 'es') to select voices.
 
     Returns:
         List of speech record dicts (same order as ``records``).
     """
-    return asyncio.run(_generate_batch_async(records, out_dir, voice, concurrency))
+    return asyncio.run(_generate_batch_async(records, out_dir, voice, concurrency, locale=locale))
 
 
 # ---------------------------------------------------------------------------
@@ -304,6 +323,8 @@ def main() -> None:
                         help="output directory for audio/ and speech.jsonl")
     parser.add_argument("--voice", default=None,
                         help="force a specific Edge TTS voice for all records")
+    parser.add_argument("--locale", choices=list(LOCALE_VOICES.keys()), default=None,
+                        help="locale for speech voices ('en', 'de', 'fr', 'es')")
     parser.add_argument("--concurrency", type=int, default=4,
                         help="parallel TTS requests (default: 4)")
     args = parser.parse_args()
@@ -315,7 +336,8 @@ def main() -> None:
     print(f"Synthesising {len(records)} records → {args.out_dir}")
     speech_records = generate_speech(records, args.out_dir,
                                      voice=args.voice,
-                                     concurrency=args.concurrency)
+                                     concurrency=args.concurrency,
+                                     locale=args.locale)
     _write_jsonl(speech_records, args.out_dir / "speech.jsonl")
 
     n_aligned = sum(

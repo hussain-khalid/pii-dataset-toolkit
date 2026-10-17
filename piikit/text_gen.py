@@ -6,6 +6,9 @@ format, so nothing here is a real person's data.
 
 Usage:
     python -m piikit.text_gen --n 1000 --seed 42 --out data/raw/text.jsonl
+    python -m piikit.text_gen --n 200  --seed 42 --locale de --out data/raw/text_de.jsonl
+
+Supported locales: en (default), de (German), fr (French), es (Spanish).
 """
 
 import argparse
@@ -20,6 +23,88 @@ from piikit.schema import LABELS
 SOURCE = "synthetic/text_gen"
 NEGATIVE_RATE = 0.20  # share of records that contain no PII
 HARD_RATE = 0.25      # share of values written in a less common format (typos aside)
+
+# ---------------------------------------------------------------------------
+# Multilingual locale data
+# ---------------------------------------------------------------------------
+SUPPORTED_LOCALES = ("en", "de", "fr", "es")
+
+LOCALE_DATA: dict[str, dict] = {
+    "en": {},  # uses module-level defaults defined below
+    "de": {
+        "first_names": [
+            "Anna", "Lena", "Max", "Felix", "Sophie", "Jonas", "Emma", "Paul",
+            "Laura", "Lukas", "Marie", "Tim", "Lisa", "Moritz", "Lea", "Tobias",
+            "Hannah", "Jan", "Klara", "Stefan",
+        ],
+        "last_names": [
+            "Müller", "Schmidt", "Schneider", "Fischer", "Weber", "Meyer", "Wagner",
+            "Becker", "Schulz", "Hoffmann", "Schäfer", "Koch", "Bauer", "Richter",
+            "Klein", "Wolf", "Schröder", "Neumann", "Schwarz", "Zimmermann",
+        ],
+        "streets": [
+            "Hauptstraße", "Bahnhofstraße", "Gartenweg", "Kirchgasse", "Lindenallee",
+            "Rosenweg", "Schulstraße", "Bergstraße", "Birkenweg", "Schillerstraße",
+        ],
+        "cities": [
+            "Musterstadt", "Neustadt", "Kleinfeld", "Großbach", "Waldkirchen",
+            "Bergheim", "Sonnental", "Lindenbach", "Fichtenau", "Buchenried",
+        ],
+        "email_domains": ["example.de", "example.com", "example.net"],
+        "tts_voice": "de-DE-KatjaNeural",
+    },
+    "fr": {
+        "first_names": [
+            "Léa", "Hugo", "Emma", "Louis", "Chloé", "Gabriel", "Inès", "Arthur",
+            "Manon", "Raphaël", "Jade", "Antoine", "Zoé", "Mathis", "Camille", "Théo",
+            "Alice", "Nathan", "Lucie", "Ethan",
+        ],
+        "last_names": [
+            "Martin", "Bernard", "Dubois", "Thomas", "Robert", "Richard", "Petit",
+            "Durand", "Leroy", "Moreau", "Simon", "Laurent", "Lefebvre", "Michel",
+            "Garcia", "David", "Bertrand", "Roux", "Vincent", "Fournier",
+        ],
+        "streets": [
+            "Rue de la Paix", "Avenue des Fleurs", "Rue du Moulin", "Allée des Chênes",
+            "Boulevard Saint-Michel", "Rue des Lilas", "Chemin du Lac", "Impasse Verte",
+            "Rue de la Forêt", "Avenue de la Gare",
+        ],
+        "cities": [
+            "Bellerive", "Montclair", "Valdor", "Hauteville", "Rivière",
+            "Clairmont", "Fontaine", "Boissy", "Grandchamp", "Lacroix",
+        ],
+        "email_domains": ["example.fr", "example.com", "example.net"],
+        "tts_voice": "fr-FR-DeniseNeural",
+    },
+    "es": {
+        "first_names": [
+            "María", "José", "Carmen", "Antonio", "Ana", "Manuel", "Laura", "David",
+            "Isabel", "Carlos", "Lucía", "Miguel", "Sara", "Francisco", "Elena",
+            "Pablo", "Rosa", "Jorge", "Marta", "Alejandro",
+        ],
+        "last_names": [
+            "García", "Martínez", "López", "Sánchez", "González", "Pérez", "Rodríguez",
+            "Fernández", "Ramírez", "Torres", "Flores", "Rivera", "Moreno", "Ruiz",
+            "Jiménez", "Díaz", "Vega", "Cruz", "Herrera", "Medina",
+        ],
+        "streets": [
+            "Calle Mayor", "Avenida de la Paz", "Calle del Sol", "Paseo del Prado",
+            "Calle de la Luna", "Avenida Central", "Calle Nueva", "Camino Real",
+            "Calle de las Flores", "Avenida del Mar",
+        ],
+        "cities": [
+            "Villanueva", "Montealto", "Puertoluz", "Valverde", "Rioseco",
+            "Llanura", "Peñalba", "Fuenlabrada", "Altozano", "Camporreal",
+        ],
+        "email_domains": ["example.es", "example.com", "example.net"],
+        "tts_voice": "es-ES-ElviraNeural",
+    },
+}
+
+
+def _locale_val(locale: str, key: str, default):
+    """Return locale-specific value or fall back to the module-level default."""
+    return LOCALE_DATA.get(locale, {}).get(key, default)
 
 FIRST_NAMES = [
     "Anna", "Liam", "Sofia", "Noah", "Maya", "Omar", "Elena", "Jonas", "Priya", "Lucas",
@@ -96,45 +181,62 @@ STREET_ABBREVIATIONS = {"Street": "St", "Road": "Rd", "Avenue": "Ave", "Lane": "
 SHORT_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 
 
-def make_person(rng):
-    first, last = rng.choice(FIRST_NAMES), rng.choice(LAST_NAMES)
-    if rng.random() < HARD_RATE:
+def make_person(rng, locale="en", hard: bool = False):
+    first_names = _locale_val(locale, "first_names", FIRST_NAMES)
+    last_names = _locale_val(locale, "last_names", LAST_NAMES)
+    first, last = rng.choice(first_names), rng.choice(last_names)
+    is_hard = hard or (rng.random() < HARD_RATE)
+    if is_hard:
         return rng.choice([f"{last}, {first}", f"{first} {last}".lower(), f"{first} {last}".upper()])
     return f"{first} {last}"
 
 
-def make_email(rng):
-    first = rng.choice(FIRST_NAMES).lower()
-    last = rng.choice(LAST_NAMES).lower()
+def make_email(rng, locale="en", hard: bool = False):
+    first_names = _locale_val(locale, "first_names", FIRST_NAMES)
+    last_names = _locale_val(locale, "last_names", LAST_NAMES)
+    domains = _locale_val(locale, "email_domains", EMAIL_DOMAINS)
+    # Normalise accented chars for email local part
+    import unicodedata
+    def _ascii(s):
+        return unicodedata.normalize("NFD", s).encode("ascii", "ignore").decode().lower()
+    first = _ascii(rng.choice(first_names))
+    last = _ascii(rng.choice(last_names))
     sep = rng.choice([".", "_", ""])
     suffix = rng.choice(["", "", str(rng.randint(1, 99))])
-    local, domain = f"{first}{sep}{last}{suffix}", rng.choice(EMAIL_DOMAINS)
-    if rng.random() < HARD_RATE:
+    local, domain = f"{first}{sep}{last}{suffix}", rng.choice(domains)
+    is_hard = hard or (rng.random() < HARD_RATE)
+    if is_hard:
         return f"{local} [at] {domain}"
     return f"{local}@{domain}"
 
 
-def make_phone(rng):
+def make_phone(rng, locale="en", hard: bool = False):
+    """Phone numbers always use the 555-01xx fictional range regardless of locale."""
     line = f"01{rng.randint(0, 99):02d}"  # 0100-0199, the range reserved for fiction
-    if rng.random() < HARD_RATE:
+    is_hard = hard or (rng.random() < HARD_RATE)
+    if is_hard:
         return rng.choice([f"555.{line}", f"555{line}", f"+1.555.{line}"])
     return rng.choice([f"555-{line}", f"+1-555-{line}", f"(555) {line}", f"+1 555 {line}"])
 
 
-def make_address(rng):
-    number, street, city = rng.randint(1, 999), rng.choice(STREETS), rng.choice(CITIES)
-    if rng.random() < HARD_RATE:
-        name, kind = street.rsplit(" ", 1)
-        if kind in STREET_ABBREVIATIONS:
-            return f"{number} {name} {STREET_ABBREVIATIONS[kind]}, {city}"
+def make_address(rng, locale="en", hard: bool = False):
+    streets = _locale_val(locale, "streets", STREETS)
+    cities = _locale_val(locale, "cities", CITIES)
+    number, street, city = rng.randint(1, 999), rng.choice(streets), rng.choice(cities)
+    is_hard = hard or (rng.random() < HARD_RATE)
+    if locale == "en" and is_hard:
+        parts = street.rsplit(" ", 1)
+        if len(parts) == 2 and parts[1] in STREET_ABBREVIATIONS:
+            return f"{number} {parts[0]} {STREET_ABBREVIATIONS[parts[1]]}, {city}"
         return f"{number} {street} {city}"
     return f"{number} {street}, {city}"
 
 
-def make_id_number(rng):
+def make_id_number(rng, locale="en", hard: bool = False):
     letters = "".join(rng.choice("ABCDEFGHJKLMNPQRSTUVWXYZ") for _ in range(2))
     digits = rng.randint(100000, 999999)
-    if rng.random() < HARD_RATE:
+    is_hard = hard or (rng.random() < HARD_RATE)
+    if is_hard:
         return rng.choice([f"{letters} {digits}", f"{letters}{digits}"])
     return f"{letters}-{digits}"
 
@@ -152,9 +254,10 @@ def _date_text(rng, year, month, day, hard):
     return f"{MONTHS[month - 1]} {day}, {year}"
 
 
-def make_dob(rng):
+def make_dob(rng, locale="en", hard: bool = False):
     year, month, day = rng.randint(1950, 2005), rng.randint(1, 12), rng.randint(1, 28)
-    return _date_text(rng, year, month, day, rng.random() < HARD_RATE)
+    is_hard = hard or (rng.random() < HARD_RATE)
+    return _date_text(rng, year, month, day, is_hard)
 
 
 WEEKDAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
@@ -224,7 +327,7 @@ GENERATORS = {
 assert set(GENERATORS) == set(LABELS), "every label needs a generator"
 
 
-def render(template: str, rng):
+def render(template: str, rng, locale: str = "en", hard: bool = False):
     """Fill a template and return (text, spans) with exact character offsets."""
     out, spans, pos = [], [], 0
     cursor = 0
@@ -237,7 +340,7 @@ def render(template: str, rng):
         if label in FILLERS:
             value = FILLERS[label](rng)
         else:
-            value = GENERATORS[label](rng)
+            value = GENERATORS[label](rng, locale=locale, hard=hard)
             spans.append({"start": pos, "end": pos + len(value), "label": label, "text": value})
         out.append(value)
         pos += len(value)
@@ -248,14 +351,14 @@ def render(template: str, rng):
     return "".join(out), spans
 
 
-def generate_record(index: int, seed: int) -> dict:
+def generate_record(index: int, seed: int, locale: str = "en", hard: bool = False) -> dict:
     # Each record has its own RNG, so record i is the same whatever n is.
     rng = random.Random(f"{seed}-{index}")
     negative = rng.random() < NEGATIVE_RATE
     pool = sorted(t for t in TEMPLATES if t.startswith("n") == negative)
     template_id = rng.choice(pool)
-    text, spans = render(TEMPLATES[template_id], rng)
-    return {
+    text, spans = render(TEMPLATES[template_id], rng, locale=locale, hard=hard)
+    record = {
         "id": f"txt-{index:06d}",
         "text": text,
         "spans": spans,
@@ -264,10 +367,15 @@ def generate_record(index: int, seed: int) -> dict:
         "seed": seed,
         "template_id": template_id,
     }
+    if locale != "en":
+        record["locale"] = locale
+    if hard:
+        record["hard"] = True
+    return record
 
 
-def generate(n: int, seed: int):
-    return [generate_record(i, seed) for i in range(n)]
+def generate(n: int, seed: int, locale: str = "en", hard: bool = False):
+    return [generate_record(i, seed, locale=locale, hard=hard) for i in range(n)]
 
 
 def write_jsonl(records, path: Path) -> None:
@@ -278,16 +386,23 @@ def write_jsonl(records, path: Path) -> None:
 
 
 def main():
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(description=__doc__,
+                                     formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--n", type=int, default=1000)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--out", type=Path, default=Path("data/raw/text.jsonl"))
+    parser.add_argument("--locale", choices=SUPPORTED_LOCALES, default="en",
+                        help="Language locale for synthetic names/addresses (default: en).")
+    parser.add_argument("--hard", action="store_true",
+                        help="Generate adversarial/hard format examples with non-standard PII shapes.")
     args = parser.parse_args()
 
-    records = generate(args.n, args.seed)
+    records = generate(args.n, args.seed, locale=args.locale, hard=args.hard)
     write_jsonl(records, args.out)
     with_pii = sum(1 for r in records if r["spans"])
-    print(f"Wrote {len(records)} records ({with_pii} with PII) to {args.out}")
+    locale_tag = f" [{args.locale}]" if args.locale != "en" else ""
+    hard_tag = " [hard]" if args.hard else ""
+    print(f"Wrote {len(records)} records ({with_pii} with PII) to {args.out}{locale_tag}{hard_tag}")
 
 
 if __name__ == "__main__":

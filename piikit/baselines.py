@@ -76,6 +76,9 @@ def run(kind: str, bench_dir: Path, out: Path):
 
     if kind.startswith("text"):
         records = read_jsonl(bench_dir / "text" / "inputs.jsonl")
+        if kind == "text-ner":
+            from piikit.systems.ner_baseline import run_ner_baseline
+            return run_ner_baseline(bench_dir, out)
         preds = [{"id": r["id"], "spans": predict_text(r["text"]) if kind == "text-regex" else []}
                  for r in records]
     elif kind == "docs-ocr":
@@ -95,7 +98,8 @@ def run(kind: str, bench_dir: Path, out: Path):
 def main():
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("kind", choices=["text-empty", "text-regex", "docs-empty", "docs-ocr"])
+    parser.add_argument("kind", choices=["text-empty", "text-regex", "text-ner",
+                                         "docs-empty", "docs-ocr"])
     parser.add_argument("--bench", type=Path, default=Path("benchmark"))
     parser.add_argument("--out", type=Path, required=True)
     args = parser.parse_args()

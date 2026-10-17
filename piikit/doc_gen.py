@@ -11,11 +11,13 @@ Writes <out-dir>/images/doc-XXXXXX.png and <out-dir>/docs.jsonl.
 """
 
 import argparse
+import io
 import json
+import os
 import random
 from pathlib import Path
 
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 from piikit import __version__
 from piikit.text_gen import (
@@ -43,6 +45,13 @@ class Page:
         self.fields = []
 
     def font(self, size):
+        # Allow users to supply a custom (e.g. handwriting) TTF via env var.
+        font_path = os.environ.get("PIIKIT_FONT")
+        if font_path:
+            try:
+                return ImageFont.truetype(font_path, size=size)
+            except OSError:
+                pass
         return ImageFont.load_default(size=size)
 
     def text(self, xy, text, size, label=None, fill=None):
@@ -58,6 +67,30 @@ class Page:
 
     def rect(self, xy, outline=(120, 120, 120), width=2, fill=None):
         self.draw.rectangle(xy, outline=outline, width=width, fill=fill)
+
+
+# ---------------------------------------------------------------------------
+# Noise / scan-degradation helpers
+# ---------------------------------------------------------------------------
+
+def _add_noise(image: Image.Image, rng: random.Random) -> Image.Image:
+    """Apply subtle scan-like degradation: slight rotation + gaussian blur + JPEG artefacts."""
+    # 1. Slight random rotation (-2 to +2 degrees)
+    angle = rng.uniform(-2.0, 2.0)
+    bg = (255, 255, 255)
+    image = image.rotate(angle, expand=False, fillcolor=bg, resample=Image.BICUBIC)
+
+    # 2. Gaussian blur to mimic slight out-of-focus scan
+    radius = rng.uniform(0.3, 0.8)
+    image = image.filter(ImageFilter.GaussianBlur(radius=radius))
+
+    # 3. JPEG round-trip to add compression artefacts
+    buf = io.BytesIO()
+    quality = rng.randint(70, 92)
+    image.save(buf, format="JPEG", quality=quality)
+    buf.seek(0)
+    image = Image.open(buf).copy()  # copy to detach from buffer
+    return image
 
 
 def draw_invoice(page: Page):
@@ -157,7 +190,7 @@ LAYOUTS = {
 }
 
 
-def generate_doc(index: int, seed: int, out_dir: Path) -> dict:
+def generate_doc(index: int, seed: int, out_dir: Path, noisy: bool = False) -> dict:
     # Per-record RNG: document i is the same whatever n is.
     rng = random.Random(f"{seed}-doc-{index}")
     doc_type = rng.choice(sorted(LAYOUTS))
@@ -166,12 +199,14 @@ def generate_doc(index: int, seed: int, out_dir: Path) -> dict:
     page = Page(width, height, rng)
     draw_fn(page)
 
+    img = _add_noise(page.image, rng) if noisy else page.image
+
     doc_id = f"doc-{index:06d}"
     image_dir = Path(out_dir) / "images"
     image_dir.mkdir(parents=True, exist_ok=True)
-    page.image.save(image_dir / f"{doc_id}.png")
+    img.save(image_dir / f"{doc_id}.png")
 
-    return {
+    record = {
         "id": doc_id,
         "image": f"images/{doc_id}.png",
         "width": width,
@@ -182,10 +217,13 @@ def generate_doc(index: int, seed: int, out_dir: Path) -> dict:
         "generator_version": __version__,
         "seed": seed,
     }
+    if noisy:
+        record["noisy"] = True
+    return record
 
 
-def generate_docs(n: int, seed: int, out_dir: Path):
-    return [generate_doc(i, seed, out_dir) for i in range(n)]
+def generate_docs(n: int, seed: int, out_dir: Path, noisy: bool = False):
+    return [generate_doc(i, seed, out_dir, noisy=noisy) for i in range(n)]
 
 
 def write_annotations(records, path: Path) -> None:
@@ -196,16 +234,26 @@ def write_annotations(records, path: Path) -> None:
 
 
 def main():
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(description=__doc__,
+                                     formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--n", type=int, default=200)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--out-dir", type=Path, default=Path("data/raw/docs"))
+    parser.add_argument("--noisy", action="store_true",
+                        help="Apply scan-like degradation: rotation, blur, JPEG artefacts.")
+    parser.add_argument("--font", default=None,
+                        help="Path to a TTF font file (e.g. a handwriting font). "
+                             "Also settable via PIIKIT_FONT env var.")
     args = parser.parse_args()
 
-    records = generate_docs(args.n, args.seed, args.out_dir)
+    if args.font:
+        os.environ["PIIKIT_FONT"] = args.font
+
+    records = generate_docs(args.n, args.seed, args.out_dir, noisy=args.noisy)
     write_annotations(records, args.out_dir / "docs.jsonl")
     n_fields = sum(len(r["fields"]) for r in records)
-    print(f"Wrote {len(records)} documents ({n_fields} labelled fields) to {args.out_dir}")
+    noise_tag = " (noisy)" if args.noisy else ""
+    print(f"Wrote {len(records)} documents{noise_tag} ({n_fields} labelled fields) to {args.out_dir}")
 
 
 if __name__ == "__main__":
