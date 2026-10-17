@@ -1,6 +1,6 @@
 # PII Dataset Toolkit
 
-![CI](https://github.com/<your-username>/pii-dataset-toolkit/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/hussain-khalid/pii-dataset-toolkit/actions/workflows/ci.yml/badge.svg)
 
 Reproducible tooling for building, validating and benchmarking **synthetic** datasets for
 personal-data (PII) detection, in three modalities: text with labelled spans, document images
