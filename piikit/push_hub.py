@@ -69,14 +69,17 @@ def push(release_dir: Path, repo_id: str, token: str | None, with_images: bool, 
                 r["fields"] = json.dumps(r.get("fields", []))
             docs_splits[split] = Dataset.from_list(records)
 
-    dataset = DatasetDict({
-        **{f"text_{k}": v for k, v in text_splits.items()},
-        **{f"docs_{k}": v for k, v in docs_splits.items()},
-    })
+    if text_splits:
+        text_ds = DatasetDict(text_splits)
+        print(f"Pushing 'text' subset to https://huggingface.co/datasets/{repo_id} ...")
+        text_ds.push_to_hub(repo_id, config_name="text", token=token, private=private)
+        print("Text subset pushed ✓")
 
-    print(f"Pushing dataset to  https://huggingface.co/datasets/{repo_id} ...")
-    dataset.push_to_hub(repo_id, token=token, private=private)
-    print("Dataset pushed ✓")
+    if docs_splits:
+        docs_ds = DatasetDict(docs_splits)
+        print(f"Pushing 'docs' subset to https://huggingface.co/datasets/{repo_id} ...")
+        docs_ds.push_to_hub(repo_id, config_name="docs", token=token, private=private)
+        print("Docs subset pushed ✓")
 
     # ---- Optional: upload images -------------------------------------------
     if with_images:
