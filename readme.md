@@ -1,6 +1,7 @@
 # PII Dataset Toolkit
 
 ![CI](https://github.com/hussain-khalid/pii-dataset-toolkit/actions/workflows/ci.yml/badge.svg)
+[![Hugging Face](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Dataset-blue)](https://huggingface.co/datasets/hussain-khalid/pii-dataset)
 
 Reproducible tooling for building, validating and benchmarking **synthetic** datasets for
 personal-data (PII) detection, in three modalities: text with labelled spans, document images
@@ -135,6 +136,22 @@ and `end_s` are in seconds. `null` means the TTS tokeniser split the entity acro
 ```
 
 ![ID card with labelled boxes](docs/images/previews/example_id_card.png)
+
+## Advanced Generator Options
+
+The generators support multilingual synthesis, adversarial stress-testing, and scan degradation:
+
+```bash
+# Multilingual text & speech generation (German, French, Spanish)
+python -m piikit.text_gen --n 1000 --locale de --out data/raw/text_de.jsonl
+python -m piikit.speech_gen --text data/raw/text_de.jsonl --locale de --out-dir data/raw/speech_de
+
+# Adversarial / hard format test split (unhyphenated IDs, inverted names, [at] emails)
+python -m piikit.text_gen --n 500 --hard --out data/raw/text_hard.jsonl
+
+# Documents with scan degradation (rotation, blur, JPEG compression) and custom font
+python -m piikit.doc_gen --n 200 --noisy --font /path/to/font.ttf --out-dir data/raw/docs_noisy
+```
 
 ## How the data stays fake
 
@@ -280,8 +297,7 @@ strict F1 0.805 (95% CI 0.752 to 0.853), with precision 0.936, recall 0.707, and
   across all splits, so scores overstate performance on unseen names.
 - The benchmark test split is small (97 text records, 15 documents). Intervals are wide, and the
   document task cannot rank systems finely.
-- Documents use one default font, clean backgrounds and axis-aligned boxes. There is no scan
-  noise, rotation, handwriting or photographed text.
+- Documents in the standard release use clean backgrounds and axis-aligned boxes; realistic scan degradation (rotation, blur, JPEG compression) and custom fonts can be simulated via `--noisy` and `--font`.
 - Labels are exact by construction, which real annotated data never is.
 - Document PNG bytes can differ between Pillow versions, which changes the benchmark's
   `frozen_id` and the image checksums, but not the annotations or text metrics.
