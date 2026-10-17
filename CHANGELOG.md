@@ -2,7 +2,14 @@
 
 ## Unreleased
 
-## 0.3.0
+- `piikit/push_hub.py`: Hugging Face Hub dataset publishing; converts release into `DatasetDict` subsets (`text`, `docs`), uploads document images, and uploads the dataset card.
+- `piikit/text_gen.py`: Added multilingual locale support (`--locale de/fr/es`) with localized names, streets, cities, and email domains; added adversarial non-standard formatting mode (`--hard`).
+- `piikit/speech_gen.py`: Added locale-aware voice selection for Edge TTS neural voices (`de-DE-KatjaNeural`, `fr-FR-DeniseNeural`, `es-ES-ElviraNeural`).
+- `piikit/doc_gen.py`: Added scan-like degradation (`--noisy`) with rotation, blur, and JPEG compression artifacts; added custom font loading via `--font` or `PIIKIT_FONT`.
+- `piikit/systems/ner_baseline.py`: Neural NER baseline using spaCy English models (`en_core_web_trf` / `en_core_web_sm`) mapped to dataset labels, with regex rules for high-precision formats. Wired into `piikit.baselines` as `text-ner`.
+- `piikit/leaderboard_html.py`: Interactive dark-themed standalone HTML dashboard generator (`docs/leaderboard.html`). Added `leaderboard-html` target in `Makefile`.
+- `piikit/submit.py`: One-command submission CLI to validate, score, and append new systems to both markdown and HTML leaderboards.
+- `tests/test_next_level.py`: Unit test coverage for multilingual text/speech, noisy docs, hard mode, NER mapping, HTML leaderboard, and submit orchestration.
 
 - `piikit/systems/ocr_baseline.py`: Tesseract OCR baseline for document field detection.
   Reads word-level bounding boxes via pytesseract, runs the same regex rules as the

@@ -26,18 +26,21 @@ flowchart TD
 
 | Stage | Command | Reads | Writes | Checks |
 | --- | --- | --- | --- | --- |
-| Generate text | `python -m piikit.text_gen --n 1000 --seed 42 --out data/raw/text.jsonl` | seed | `text.jsonl` | none (see next row) |
+| Generate text | `python -m piikit.text_gen --n 1000 --seed 42 --out data/raw/text.jsonl` (supports `--locale`, `--hard`) | seed | `text.jsonl` | none (see next row) |
 | Validate text | `python -m piikit.validate data/raw/text.jsonl` | `text.jsonl` | report | schema, `text[start:end]` equals the span text, offsets in range, no overlaps, labels allowed, unique ids |
-| Generate documents | `python -m piikit.doc_gen --n 200 --seed 42 --out-dir data/raw/docs` | seed | PNG images, `docs.jsonl` | none (see next row) |
+| Generate documents | `python -m piikit.doc_gen --n 200 --seed 42 --out-dir data/raw/docs` (supports `--noisy`, `--font`) | seed | PNG images, `docs.jsonl` | none (see next row) |
 | Validate documents | `python -m piikit.validate_docs data/raw/docs/docs.jsonl` | images, `docs.jsonl` | report | image exists and matches stated size, boxes inside the image, boxes contain visible text, no overlapping boxes |
-| Generate speech | `python -m piikit.speech_gen --text data/raw/text.jsonl --n 50 --seed 42 --out-dir data/raw/speech` | `text.jsonl`, Edge TTS | `audio/*.mp3`, `speech.jsonl` | none (see next row) |
+| Generate speech | `python -m piikit.speech_gen --text data/raw/text.jsonl --n 50 --seed 42 --out-dir data/raw/speech` (supports `--locale`) | `text.jsonl`, Edge TTS | `audio/*.mp3`, `speech.jsonl` | none (see next row) |
 | Validate speech | `python -m piikit.validate_speech data/raw/speech/speech.jsonl` | audio files, `speech.jsonl` | report | required keys, audio file exists, span text-slice matches, time offsets within duration, unique ids |
 | Build release | `python -m piikit.build_release ...` | both datasets | `data/release/v0.2.0/` | see below |
 | Validate release | `python -m piikit.validate_release data/release/v0.2.0` | the release | report | manifest checksums and counts, schemas per split, provenance on every record, no id, text or image shared between splits |
 | Freeze benchmark | `python -m piikit.freeze build --release ... --out benchmark` | release test split | `benchmark/` | refuses to overwrite an existing frozen benchmark |
-| Run a baseline | `python -m piikit.baselines text-regex --bench benchmark --out preds.jsonl` | `benchmark/` | predictions | refuses to run if frozen files changed |
+| Run a baseline | `python -m piikit.baselines text-regex --bench benchmark --out preds.jsonl` (also `text-ner`, `docs-ocr`) | `benchmark/` | predictions | refuses to run if frozen files changed |
 | Score | `python -m piikit.score text --pred preds.jsonl --name my-system --save` | predictions, `benchmark/` | `results/*.json` | frozen check, every id present, valid offsets and labels |
-| Leaderboard | `python -m piikit.leaderboard --bench benchmark` | `results/*.json` | `LEADERBOARD.md` | ignores results scored against a different frozen id |
+| Markdown Leaderboard | `python -m piikit.leaderboard --bench benchmark` | `results/*.json` | `LEADERBOARD.md` | ignores results scored against a different frozen id |
+| HTML Leaderboard | `python -m piikit.leaderboard_html --bench benchmark --out docs/leaderboard.html` | `results/*.json` | `docs/leaderboard.html` | self-contained interactive web dashboard |
+| Submit CLI | `python -m piikit.submit --task text --pred preds.jsonl --name "My System" --html` | predictions | benchmark & leaderboards | scores, updates markdown and HTML leaderboards in one step |
+| Publish to Hub | `python -m piikit.push_hub --release data/release/v0.2.0 --repo user/dataset --with-images` | release directory | Hugging Face Hub | pushes DatasetDict subsets (`text`, `docs`), card, and document images |
 
 `build_release` does four things in order: deduplicate (exact and near-duplicates), assign
 splits from a hash of each record id, attach a provenance block to every record, and write
